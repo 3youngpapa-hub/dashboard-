@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>김포시 긴급구조통제단 작전상황판 v7.0</title>
+<style>
+:root{
+  --bg:#c8ddf0;--board:#aec8e0;
+  --pb:#1a3a6b;--ppg:#fff;--pbd:#f0f6ff;
+  --hdr:#1a3a6b;--ht:#fff;
+  --tbg:#1a3a6b;--tt:#fff;
+  --abg:#b91c1c;--at:#fff;
+  --tx:#0f172a;--mt:#64748b;
+  --ih:rgba(26,58,107,.07);--if:rgba(26,58,107,.14);--ib:#1a3a6b;
+  --gb:#1a3a6b;--gt:#fff;
+  --mb:#e8f4ff;--mg:rgba(26,58,107,.1);
+  --th:#1a3a6b;--to:#f8faff;--te:#eef6ff;
+  --r:7px;--fn:'Malgun Gothic','맑은 고딕',sans-serif;
+  --danger:#7f1d1d;--danger-bg:#fff1f2;
+  --warn:#92400e;--warn-bg:#fffbeb;
+  --ok:#14532d;--ok-bg:#f0fdf4;
+}
+body.night{
+  --bg:#071020;--board:#0a1428;
+  --ppg:#0f172a;--pbd:#111827;
+  --hdr:#0c1f40;--ht:#93c5fd;
+  --tbg:#0c1f40;--tt:#93c5fd;
+  --abg:#7f1d1d;--at:#fca5a5;
+  --tx:#e2e8f0;--mt:#94a3b8;
+  --mb:#0a1428;--mg:rgba(59,130,246,.12);
+  --th:#0c1f40;--to:#111827;--te:#0f172a;
+  --danger-bg:#2d0000;--warn-bg:#1c1000;--ok-bg:#001a0a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:var(--fn);background:var(--bg);}
+
+/* 레이아웃 */
+#app{display:grid;grid-template-rows:68px 46px 1fr 116px;gap:5px;padding:5px;height:100vh;background:var(--board);}
+#hdr{display:grid;grid-template-columns:0.85fr 2.2fr 0.85fr;gap:5px;}
+
+/* 헤더 */
+.hc{background:var(--ppg);border:3px solid var(--pb);border-radius:var(--r);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#logo-box{padding:4px 8px;justify-content:flex-start;gap:0;}
+#logo-img{height:54px;width:auto;object-fit:contain;}
+#tit-box{background:var(--tbg);border-color:var(--tbg);}
+#tit-inp{font-size:27px;font-weight:900;color:var(--tt);background:transparent;border:none;outline:none;text-align:center;width:100%;letter-spacing:-.03em;}
+#dt-box{flex-direction:column;gap:1px;background:var(--tbg);border-color:var(--tbg);}
+#clock{font-size:18px;font-weight:900;color:var(--tt);}
+#wthr-inp{font-size:15px;font-weight:700;color:var(--tt);background:transparent;border:none;outline:none;text-align:center;width:100%;}
+
+/* 긴급메시지 */
+#abar{background:var(--abg);border-radius:var(--r);display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;position:relative;}
+#alert-inp{font-size:24px;font-weight:900;color:var(--at);background:transparent;border:none;outline:none;text-align:center;width:84%;letter-spacing:-.04em;z-index:2;position:relative;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+@keyframes marquee{0%{transform:translateX(70%);}100%{transform:translateX(-110%);}}
+.ab{animation:blink 1s ease-in-out infinite;}
+.am{animation:marquee 14s linear infinite;white-space:nowrap;display:inline-block;}
+#amode-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:5px;color:#fff;font-size:11px;font-weight:900;padding:3px 8px;cursor:pointer;font-family:var(--fn);z-index:3;}
+
+/* 메인 */
+#main{display:grid;grid-template-columns:0.85fr 2.2fr 0.85fr;gap:5px;min-height:0;}
+.panel{background:var(--ppg);border:3px solid var(--pb);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.ph{background:var(--hdr);color:var(--ht);font-size:20px;font-weight:900;text-align:center;padding:8px 0;letter-spacing:.15em;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center;}
+.ph::before{content:'';position:absolute;left:8px;top:5px;width:12px;height:7px;background:rgba(255,255,255,.42);clip-path:polygon(20% 0%,100% 0%,80% 100%,0% 100%);}
+.ph::after{content:'';position:absolute;left:23px;top:5px;width:12px;height:7px;background:rgba(131,212,226,.6);clip-path:polygon(20% 0%,100% 0%,80% 100%,0% 100%);}
+.fs-btn{position:absolute;right:7px;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.32);border-radius:4px;color:#fff;font-size:11px;font-weight:900;padding:2px 7px;cursor:pointer;font-family:var(--fn);}
+.pb2{flex:1;min-height:0;overflow-y:auto;background:var(--pbd);color:var(--tx);}
+
+/* 재난발생 */
+#occ{padding:8px 11px;}
+.st{font-size:14px;font-weight:900;border-bottom:2px solid var(--pb);padding-bottom:2px;margin-bottom:5px;margin-top:8px;color:var(--tx);}
+.st:first-child{margin-top:0;}
+.fr{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px;font-size:13px;font-weight:700;color:var(--tx);min-height:24px;margin-bottom:2px;}
+.fl{white-space:nowrap;flex-shrink:0;}
+.fi{flex:1;min-width:20px;background:transparent;border:none;border-bottom:1.5px dashed var(--mt);outline:none;font-size:14px;font-weight:700;color:var(--tx);font-family:var(--fn);padding:1px 3px;transition:background .12s,border-color .12s;}
+.fi:hover{background:var(--ih);border-bottom-color:var(--ib);}
+.fi:focus{background:var(--if);border-bottom-color:var(--ib);border-bottom-style:solid;}
+.fi.fw{flex:none;}
+.frs{padding-left:13px;}
+.dg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:4px;}
+.dc{background:var(--ppg);border:1.5px solid var(--pb);border-radius:5px;padding:3px 4px;text-align:center;}
+.dc label{display:block;font-size:13px;font-weight:900;color:var(--tx);margin-bottom:2px;}
+.dc input{width:100%;background:transparent;border:none;outline:none;text-align:center;font-size:14px;font-weight:900;color:var(--tx);font-family:var(--fn);}
+.vt{width:100%;border-collapse:collapse;font-size:12px;margin-top:3px;}
+.vt th{background:var(--th);color:#fff;padding:3px 1px;text-align:center;border:1px solid var(--pb);}
+.vt td{border:1px solid var(--pb);padding:1px;text-align:center;}
+.vt td input{width:100%;background:transparent;border:none;outline:none;text-align:center;font-size:12px;font-weight:700;color:var(--tx);font-family:var(--fn);}
+
+/* 작전도 */
+#map-panel .pb2{position:relative;overflow:hidden;padding:0;}
+#mc{position:relative;width:100%;height:100%;background:var(--mb);background-image:linear-gradient(var(--mg) 1px,transparent 1px),linear-gradient(90deg,var(--mg) 1px,transparent 1px);background-size:18px 18px;}
+#mc-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;display:none;}
+#mc-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+#mc-svg.da{pointer-events:all;cursor:crosshair;}
+.sb{position:absolute;transform:translate(-50%,-50%);border-radius:16px;padding:3px 9px;font-size:13px;font-weight:900;color:#fff;cursor:move;z-index:15;user-select:none;border:2px solid rgba(255,255,255,.32);box-shadow:0 2px 6px rgba(0,0,0,.32);}
+.mi2{position:absolute;transform:translate(-50%,-50%);background:var(--ppg);border:2px solid var(--pb);border-radius:6px;padding:2px 5px;font-size:11px;font-weight:900;cursor:grab;z-index:20;user-select:none;white-space:nowrap;display:flex;align-items:center;gap:2px;box-shadow:0 1px 5px rgba(0,0,0,.17);}
+.mi2.sel{outline:3px solid #fbbf24;z-index:25;}
+.mi2 .ie{font-size:13px;}
+.mi2 .il{font-size:11px;font-weight:900;color:var(--tx);}
+#tool-tb{position:absolute;left:6px;top:6px;z-index:40;background:var(--hdr);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--fn);}
+#map-edbtn{position:absolute;right:6px;top:6px;z-index:40;background:rgba(26,58,107,.82);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--fn);}
+#qe{position:fixed;right:20px;bottom:60px;z-index:9999;background:var(--ppg);border:2px solid var(--pb);border-radius:8px;padding:8px;width:235px;box-shadow:0 4px 20px rgba(0,0,0,.4);display:none;}
+#qe.show{display:block;}
+#qe label{font-size:11px;font-weight:900;color:var(--mt);display:block;margin-bottom:2px;}
+#qe input,#qe select{width:100%;border:1.5px solid var(--pb);border-radius:4px;padding:4px 6px;font-size:13px;font-weight:700;color:var(--tx);background:var(--pbd);font-family:var(--fn);margin-bottom:5px;}
+.qr{display:flex;gap:4px;}
+.qb{flex:1;border:none;border-radius:5px;padding:5px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--fn);}
+.qdl{background:#dc2626;color:#fff;}
+.qcl{background:var(--pbd);color:var(--tx);border:1.5px solid var(--pb);}
+#lgd{position:absolute;right:6px;bottom:6px;z-index:30;background:var(--ppg);border:1.5px solid var(--pb);border-radius:7px;padding:7px 9px;font-size:11px;font-weight:700;color:var(--tx);display:none;min-width:145px;}
+#lgd.show{display:block;}
+.lr{display:flex;align-items:center;gap:5px;margin-bottom:2px;}
+.ll{width:22px;height:3px;border-radius:2px;flex-shrink:0;}
+#photo-ov{position:absolute;right:6px;top:36px;z-index:35;width:35%;max-height:90%;background:var(--ppg);border:2px solid var(--pb);border-radius:7px;overflow:hidden;display:none;}
+#photo-ov.show{display:block;}
+#photo-img{width:100%;display:block;}
+#photo-cl{position:absolute;top:3px;right:3px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:21px;height:21px;font-size:12px;font-weight:900;cursor:pointer;}
+
+/* 타임라인 */
+.tlt{width:100%;border-collapse:collapse;}
+.tlt thead th{background:var(--th);color:#fff;font-size:15px;font-weight:900;padding:7px 3px;text-align:center;border:1px solid var(--pb);position:sticky;top:0;z-index:2;}
+.tlt tbody tr:nth-child(odd){background:var(--to);}
+.tlt tbody tr:nth-child(even){background:var(--te);}
+.tlt td{border:1px solid rgba(26,58,107,.17);padding:1px 2px;vertical-align:middle;}
+.tli{width:100%;background:transparent;border:none;outline:none;font-size:15px;font-weight:700;color:var(--tx);font-family:var(--fn);padding:4px 3px;}
+.tli:focus{background:var(--if);}
+.tltime{width:50px;text-align:center;}
+.tlnote{width:46px;text-align:center;}
+.tladd{width:100%;background:var(--th);color:#fff;border:none;padding:5px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--fn);}
+
+/* 하단 조 */
+#bottom{display:grid;grid-template-columns:0.85fr 2.2fr 0.85fr;gap:5px;}
+.gb{background:var(--gb);border:3px solid var(--pb);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;}
+.ghr{display:flex;align-items:center;justify-content:space-between;padding:4px 9px;flex-shrink:0;}
+.gtl{font-size:15px;font-weight:900;color:var(--gt);}
+.gadd{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:4px;padding:2px 7px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--fn);}
+.gadd:hover{background:rgba(255,255,255,.24);}
+.gu{flex:1;overflow-y:auto;display:flex;flex-wrap:wrap;gap:3px;padding:3px 7px;align-content:flex-start;min-height:0;}
+.gb.dov{outline:3px solid #fbbf24;}
+.ut{border-radius:5px;padding:4px 10px;font-size:15px;font-weight:900;cursor:grab;user-select:none;white-space:nowrap;border:1.5px solid rgba(255,255,255,.18);display:flex;align-items:center;gap:3px;}
+.ut.ts{background:#1d4ed8;color:#fff;}
+.ut.ta{background:#dc2626;color:#fff;}
+.ut.tr{background:#16a34a;color:#fff;}
+.udl{background:rgba(255,255,255,.22);border:none;border-radius:3px;color:#fff;font-size:10px;padding:0 4px;cursor:pointer;line-height:16px;}
+
+/* 전체화면 오버레이 */
+#fso{position:fixed;inset:0;z-index:200;background:var(--board);display:none;flex-direction:column;}
+#fso.show{display:flex;}
+#fso-cl{position:absolute;top:10px;right:12px;background:#dc2626;color:#fff;border:none;border-radius:6px;padding:6px 13px;font-size:14px;font-weight:900;cursor:pointer;font-family:var(--fn);z-index:201;}
+#fso-ct{flex:1;min-height:0;overflow:hidden;}
+
+/* 작전도 전용창 */
+#mped{position:fixed;inset:0;z-index:300;display:none;background:var(--board);}
+#mped.show{display:grid;grid-template-columns:275px 1fr;grid-template-rows:1fr;}
+#mped-tools{background:var(--ppg);border-right:3px solid var(--pb);overflow-y:auto;padding:10px;}
+#mped-cw{position:relative;overflow:hidden;}
+#mped-ttl{font-size:15px;font-weight:900;color:var(--tx);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+#mped-cl{background:#dc2626;color:#fff;border:none;border-radius:5px;padding:5px 11px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--fn);}
+.ts2{margin-bottom:8px;}
+.ts2-t{font-size:12px;font-weight:900;color:var(--mt);margin-bottom:3px;border-bottom:1px solid var(--mg);padding-bottom:2px;}
+.tbg{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+.tb{background:var(--pbd);border:1.5px solid var(--pb);border-radius:5px;padding:4px 2px;font-size:12px;font-weight:900;color:var(--tx);cursor:pointer;font-family:var(--fn);display:flex;align-items:center;justify-content:center;gap:2px;transition:background .1s;}
+.tb:hover{background:var(--ih);}
+.tb.on{background:#dc2626;color:#fff;border-color:#dc2626;}
+.tb .te{font-size:14px;}
+select.ss{width:100%;border:1.5px solid var(--pb);border-radius:4px;padding:4px;font-size:12px;font-weight:700;background:var(--pbd);color:var(--tx);font-family:var(--fn);margin-bottom:3px;}
+input.si{width:100%;border:1.5px solid var(--pb);border-radius:4px;padding:4px;font-size:12px;font-weight:700;background:var(--pbd);color:var(--tx);font-family:var(--fn);margin-bottom:3px;}
+
+/* 메뉴 */
+#mbtn{position:fixed;right:10px;bottom:8px;z-index:100;background:var(--hdr);color:#fff;border:none;border-radius:6px;padding:6px 13px;font-size:12px;font-weight:900;cursor:pointer;font-family:var(--fn);box-shadow:0 2px 8px rgba(0,0,0,.26);}
+#mpop{position:fixed;right:10px;bottom:44px;z-index:100;background:var(--ppg);border:2px solid var(--pb);border-radius:8px;padding:8px;display:none;flex-direction:column;gap:4px;min-width:150px;box-shadow:0 4px 16px rgba(0,0,0,.26);}
+#mpop.show{display:flex;}
+.mi3{background:var(--pbd);border:1.5px solid var(--pb);border-radius:5px;padding:6px 10px;font-size:13px;font-weight:900;color:var(--tx);cursor:pointer;font-family:var(--fn);text-align:left;}
+.mi3:hover{background:var(--ih);}
+
+.fi-wide{width:100%;background:transparent;border:1px dashed var(--mt);border-radius:4px;outline:none;font-size:14px;font-weight:700;color:var(--tx);font-family:var(--fn);padding:3px 5px;resize:none;transition:background .12s,border-color .12s;line-height:1.4;}
+.fi-wide:hover{background:var(--ih);border-color:var(--ib);}
+.fi-wide:focus{background:var(--if2);border-color:var(--ib);}
+.stage-btns{display:flex;gap:3px;flex-wrap:wrap;}
+.stage-btn{border:1.5px solid var(--pb);border-radius:4px;padding:2px 8px;font-size:13px;font-weight:900;cursor:pointer;font-family:var(--fn);background:var(--ppg);color:var(--tx);}
+.stage-btn.on{background:var(--pb);color:#fff;}
+
+/* 작전도 사이드바 */
+#map-sidebar{
+  position:absolute;right:0;top:0;bottom:0;z-index:35;
+  width:145px;background:var(--ppg);
+  border-left:2px solid var(--pb);
+  display:flex;flex-direction:column;
+  transition:transform .2s;
+}
+#map-sidebar.hidden{transform:translateX(100%);}
+#sidebar-toggle{
+  position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:36;
+  background:var(--pb);color:#fff;border:none;
+  border-radius:6px 0 0 6px;
+  padding:8px 4px;font-size:11px;font-weight:900;
+  cursor:pointer;font-family:var(--fn);writing-mode:vertical-rl;
+  letter-spacing:.1em;
+}
+#map-sidebar.hidden + #sidebar-toggle{right:0;}
+.sb-section{padding:6px 8px;border-bottom:1px solid var(--mg);}
+.sb-section-t{font-size:11px;font-weight:900;color:var(--mt);margin-bottom:4px;}
+.sb-btn{width:100%;background:var(--pbd);border:1.5px solid var(--pb);border-radius:5px;
+  padding:4px 5px;font-size:13px;font-weight:900;color:var(--tx);cursor:pointer;
+  font-family:var(--fn);display:flex;align-items:center;gap:4px;margin-bottom:3px;
+  text-align:left;}
+.sb-btn:hover{background:var(--ih);}
+.sb-btn .se{font-size:14px;flex-shrink:0;}
+.sb-search{width:100%;border:1.5px solid var(--pb);border-radius:4px;padding:4px;
+  font-size:12px;font-weight:700;background:var(--pbd);color:var(--tx);
+  font-family:var(--fn);margin-bottom:4px;}
+#sb-vlist{flex:1;overflow-y:auto;padding:0 8px 6px;}
+#sb-vlist .sb-btn{font-size:11px;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:var(--pb);border-radius:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+@media print{
+  @page{size:297mm 210mm;margin:0;}
+  html{width:297mm;height:210mm;}
+  body{width:297mm;height:210mm;overflow:hidden;margin:0;padding:0;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #mbtn,#mpop,#tool-tb,#qe,#lgd,#photo-ov,#mini-tool,#mped,#fso,
+  #cap-overlay,#map-sidebar,#sidebar-toggle,#save-indicator,
+  #amode-btn,.fs-btn{display:none!important;}
+  #app{width:297mm!important;height:210mm!important;
+    display:grid!important;
+    grid-template-rows:58px 40px 1fr 95px!important;
+    gap:3px!important;padding:3px!important;
+    transform:none!important;
+    position:static!important;}
+  #hdr,#main,#bottom{display:grid!important;gap:3px!important;
+    grid-template-columns:0.85fr 2.2fr 0.85fr!important;}
+  .panel,.gb{overflow:hidden!important;break-inside:avoid;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .pb2{overflow:hidden!important;}
+  .ph,.gb{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #abar{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 헤더 -->
+  <div id="hdr">
+    <div class="hc" id="logo-box">
+      <img id="logo-img" src="data:image/png;base64,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" alt="김포소방서 로고"/>
+    </div>
+    <div class="hc" id="tit-box">
+      <input id="tit-inp" value="김포시 긴급구조통제단 작전상황판" spellcheck="false"/>
+    </div>
+    <div class="hc" id="dt-box">
+      <div id="clock">---</div>
+      <input id="wthr-inp" value="기상 클릭 입력" spellcheck="false" placeholder="기상상황"/>
+    </div>
+  </div>
+
+  <!-- 긴급 메시지 -->
+  <div id="abar">
+    <span style="font-size:22px;flex-shrink:0;">📢</span>
+    <input id="alert-inp" value="긴급 상황전파 메시지창" spellcheck="false"/>
+    <button id="amode-btn" onclick="cycleAlert()">고정</button>
+  </div>
+
+  <!-- 메인 -->
+  <div id="main">
+
+    <!-- 재난발생 현황 -->
+    <div class="panel">
+      <div class="ph">재난발생 현황<button class="fs-btn" onclick="openFS('occ')">⛶</button></div>
+      <div class="pb2" id="occ">
+        <div class="st">■ 발생개요 <span style="font-size:10px;font-weight:400;color:var(--mt)">클릭 입력</span></div>
+        <div class="fr">
+          <span class="fl">● 일시 :</span>
+          <input class="fi fw" id="f-time" placeholder="2026.5.16. 10:30" style="width:120px;" spellcheck="false"/>
+          <span class="fl">( </span>
+          <input class="fi fw" id="f-bh" placeholder="00" style="width:26px;text-align:center;" spellcheck="false"/>
+          <span class="fl">:</span>
+          <input class="fi fw" id="f-bm" placeholder="00" style="width:26px;text-align:center;" spellcheck="false"/>
+          <span class="fl"> 기준 )</span>
+        </div>
+        <div class="fr frs">
+          <span class="fl">- 선착대도착 :</span>
+          <input class="fi fw" id="f-first" placeholder="10:34" style="width:48px;" spellcheck="false"/>
+          <span class="fl">/ 대응단계 :</span>
+<input class="fi" id="f-stage" placeholder="1단계" spellcheck="false"/>
+        </div>
+        <div class="fr"><span class="fl">● 주소 :</span><input class="fi" id="f-addr" placeholder="김포시 ..." spellcheck="false"/></div>
+        <div class="fr"><span class="fl">● 대상 :</span><input class="fi" id="f-target" placeholder="○○건물" spellcheck="false"/></div>
+        <div class="fr frs">
+          <span class="fl">- 용도:</span><input class="fi" id="f-use" placeholder="근린생활시설" spellcheck="false"/>
+          </div>
+        <div class="fr frs"><span class="fl">- 구조:</span><input class="fi" id="f-struct" placeholder="철콘조 지상4/지하1층, 연면적 0000㎡" spellcheck="false"/></div>
+        <div class="fr"><span class="fl">● 원인 :</span><input class="fi" id="f-cause" placeholder="전기적 요인" spellcheck="false"/></div>
+        <div class="fr"><span class="fl">● 내용 :</span><input class="fi" id="f-content" placeholder="○층 ○○실 화재" spellcheck="false"/></div>
+
+        <div class="st" style="color:#991b1b;border-bottom-color:#991b1b;">■ 피해상황</div>
+        <div class="fr"><span class="fl">● 인명피해 : 총</span><input class="fi fw" id="f-cas-total" placeholder="0" style="width:34px;text-align:center;" spellcheck="false"/><span class="fl">명</span></div>
+        <div class="fr" style="align-items:center;gap:6px;margin-bottom:3px;">
+          <span class="fl" style="color:#dc2626;font-weight:900;">사망</span><input class="fi fw" id="f-death" placeholder="0" style="width:34px;text-align:center;color:#dc2626;font-weight:900;" spellcheck="false" oninput="sumCas()"/>
+          <span class="fl" style="color:#ea580c;font-weight:900;">/ 중상</span><input class="fi fw" id="f-heavy" placeholder="0" style="width:34px;text-align:center;color:#ea580c;font-weight:900;" spellcheck="false" oninput="sumCas()"/>
+          <span class="fl" style="color:#d97706;font-weight:900;">/ 경상</span><input class="fi fw" id="f-light" placeholder="0" style="width:34px;text-align:center;color:#d97706;font-weight:900;" spellcheck="false" oninput="sumCas()"/>
+        </div>
+        <div class="fr">
+          <span class="fl">● 재산피해 :</span>
+          <input class="fi fw" id="f-prop" placeholder="0" style="width:60px;text-align:center;" spellcheck="false"/>
+          <span class="fl">만원</span>
+        </div>
+
+        <div class="st">■ 동원현황</div>
+        <div class="fr">
+          <span class="fl">● 인원: 총</span>
+          <input class="fi fw" id="f-total" placeholder="0" style="width:36px;text-align:center;" spellcheck="false"/>
+          <span class="fl">명</span>
+        </div>
+        <div class="fr frs">
+          <span class="fl">소방</span><input class="fi fw" id="f-fire" placeholder="0" style="width:30px;text-align:center;" spellcheck="false"/>
+          <span class="fl">, 시·도</span><input class="fi fw" id="f-city" placeholder="0" style="width:30px;text-align:center;" spellcheck="false"/>
+          <span class="fl">, 경찰</span><input class="fi fw" id="f-police" placeholder="0" style="width:30px;text-align:center;" spellcheck="false"/>
+          <span class="fl">, 기타</span><input class="fi fw" id="f-other" placeholder="0" style="width:30px;text-align:center;" spellcheck="false"/>
+        </div>
+
+        <div class="st">■ 장비현황</div>
+        <div class="fr">
+          <span class="fl">● 차량: 총</span>
+          <input class="fi fw" id="f-vehtot" placeholder="0" style="width:36px;text-align:center;" spellcheck="false"/>
+          <span class="fl">대</span>
+        </div>
+        <table class="vt">
+          <thead><tr><th>지휘</th><th>펌프</th><th>탱크</th><th>화학</th><th>구급</th></tr></thead>
+          <tbody><tr>
+            <td><input id="v-cmd" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-pump" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-tank" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-chem" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-amb" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+          </tr></tbody>
+        </table>
+        <table class="vt">
+          <thead><tr><th>고가</th><th>굴절</th><th>구조</th><th>배연</th><th>기타</th></tr></thead>
+          <tbody><tr>
+            <td><input id="v-ladder" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-bend" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-rescue" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-smoke" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+            <td><input id="v-etc" placeholder="0" spellcheck="false" oninput="sumVeh()"/></td>
+          </tr></tbody>
+        </table>
+        <div class="fr" style="margin-top:5px;"><span class="fl">● 장비 :</span><input class="fi" id="f-equip" placeholder="드론 1대, 열화상카메라 1대" spellcheck="false"/></div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+
+    <!-- 상황 작전도 -->
+    <div class="panel" id="map-panel">
+      <div class="ph">상 황 작 전 도<button class="fs-btn" onclick="openMapEd()">⛶ 전용창</button></div>
+      <div class="pb2">
+        <div id="mc">
+          <img id="mc-bg"/>
+          <svg id="mc-svg"></svg>
+          <div class="sb" id="s1" style="left:50%;top:84%;background:#dc2626;" data-sec="1">1방면</div>
+          <div class="sb" id="s2" style="left:14%;top:50%;background:#ea580c;" data-sec="2">2방면</div>
+          <div class="sb" id="s3" style="left:50%;top:13%;background:#16a34a;" data-sec="3">3방면</div>
+          <div class="sb" id="s4" style="left:85%;top:50%;background:#0284c7;" data-sec="4">4방면</div>
+          
+          <!-- 작전도 우측 사이드바 -->
+          <div id="map-sidebar">
+            <div class="sb-section">
+              <div class="sb-section-t">빠른 배치</div>
+              <button class="sb-btn" onclick="addIcon('🔥','화점','#dc2626')"><span class="se">🔥</span>화점</button>
+              <button class="sb-btn" onclick="addIcon('🧯','소화전','#dc2626')"><span class="se">🧯</span>소화전</button>
+              <button class="sb-btn" onclick="addIcon('🚒','선착대','#dc2626')"><span class="se">🚒</span>선착대</button>
+              <button class="sb-btn" onclick="addIcon('📡','지휘차','#1a3a6b')"><span class="se">📡</span>지휘차</button>
+            </div>
+            <div class="sb-section">
+              <div class="sb-section-t">김포 차량</div>
+              <input class="sb-search" id="sb-search" placeholder="검색..." oninput="filterSB()"/>
+            </div>
+            <div id="sb-vlist"></div>
+            <div class="sb-section" style="border-top:1px solid var(--mg);margin-top:auto;">
+              <div class="sb-section-t">배경등록</div>
+              <button class="sb-btn" onclick="document.getElementById('sb-bg-up').click()"><span class="se">🗺</span>배경 이미지</button>
+              <input type="file" id="sb-bg-up" accept="image/*" style="display:none;" onchange="loadBg(this)"/>
+              <button class="sb-btn" id="photo-toggle-btn" onclick="togglePhotoOv()"><span class="se">📷</span>사진 보기/숨기기</button>
+              <input type="file" id="photo-file-sb" accept="image/*" style="display:none;" onchange="loadPhoto(this)"/>
+            
+    <div class="sb-section" style="border-bottom:none;">
+      <div class="sb-section-t">아이콘 배율</div>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <input type="range" id="map-zoom" min="50" max="200" value="100" style="flex:1;" oninput="applyMapZoom(this.value)"/>
+        <span id="map-zoom-val" style="font-size:11px;font-weight:900;color:var(--tx);width:36px;">100%</span>
+      </div>
+    </div>
+          </div>
+          </div>
+          <button id="sidebar-toggle" onclick="toggleSidebar()">차량<br/>배치</button>
+
+          <div id="mc-empty" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+            <div style="font-size:26px;font-weight:900;color:var(--mt);opacity:.35;">상황 작전도</div>
+            <div style="font-size:11px;color:var(--mt);opacity:.35;margin-top:3px;">전용창 버튼으로 편집하세요</div>
+          </div>
+          
+          
+          
+          <div id="lgd">
+            <div style="font-size:12px;font-weight:900;margin-bottom:4px;">범 례</div>
+            <div class="lr"><div class="ll" style="background:#0284c7;"></div>급수선</div>
+            <div class="lr"><div class="ll" style="background:#dc2626;"></div>방수선</div>
+            <div class="lr"><div class="ll" style="background:#fbbf24;"></div>1차 통제선</div>
+            <div class="lr"><div class="ll" style="background:#f97316;"></div>2차 통제선</div>
+          </div>
+          <div id="photo-ov">
+            <div id="photo-drag-bar" style="background:var(--pb);color:#fff;font-size:11px;font-weight:900;padding:3px 8px;cursor:move;display:flex;align-items:center;justify-content:space-between;user-select:none;">
+              <span>📷 참조사진</span>
+              <div style="display:flex;gap:4px;">
+                <button id="photo-pin-btn" onclick="togglePinMode()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:900;cursor:pointer;font-family:var(--fn);">📍 화점핀</button>
+                <button onclick="hidePhoto()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:3px;padding:1px 6px;font-size:10px;font-weight:900;cursor:pointer;">숨기기</button>
+              </div>
+            </div>
+            <div id="photo-wrap" style="position:relative;display:inline-block;width:100%;">
+              <button id="photo-cl" onclick="closePhoto()" style="display:none;position:absolute;top:3px;right:3px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;font-weight:900;cursor:pointer;z-index:5;">✕</button>
+              <button id="photo-pin-btn2" onclick="togglePinMode()" style="position:absolute;top:3px;left:3px;background:rgba(220,38,38,.85);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:900;cursor:pointer;z-index:5;font-family:var(--fn);">📍 화점핀</button>
+              <img id="photo-img" alt="참조사진" style="width:100%;display:block;"/>
+              <svg id="photo-svg" style="position:absolute;inset:0;width:100%;height:100%;cursor:default;" onclick="addPhotoPin(event)"></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 시간대별 조치사항 -->
+    <div class="panel">
+      <div class="ph">시간대별 조치사항<button class="fs-btn" onclick="openFS('tl')">⛶</button></div>
+      <div class="pb2" id="tl-body">
+        <table class="tlt">
+          <thead><tr><th class="tltime">일 시</th><th>주요조치사항</th><th class="tlnote">비 고</th></tr></thead>
+          <tbody id="tl-tb"></tbody>
+        </table>
+        <button class="tladd" onclick="addTL()">＋ 행 추가</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 하단 조 편성 -->
+  <div id="bottom">
+    <div class="gb" id="grp-rest" ondragover="event.preventDefault();this.classList.add('dov')" ondragleave="this.classList.remove('dov')" ondrop="dropU(event,'rest')">
+      <div class="ghr"><span class="gtl">휴식조</span><button class="gadd" onclick="addU('rest')">+추가</button></div>
+      <div class="gu" id="u-rest"></div>
+    </div>
+    <div class="gb" id="grp-active" ondragover="event.preventDefault();this.classList.add('dov')" ondragleave="this.classList.remove('dov')" ondrop="dropU(event,'active')">
+      <div class="ghr"><span class="gtl">활동조</span><button class="gadd" onclick="addU('active')">+추가</button></div>
+      <div class="gu" id="u-active"></div>
+    </div>
+    <div class="gb" id="grp-standby" ondragover="event.preventDefault();this.classList.add('dov')" ondragleave="this.classList.remove('dov')" ondrop="dropU(event,'standby')">
+      <div class="ghr"><span class="gtl">대기조</span><button class="gadd" onclick="addU('standby')">+추가</button></div>
+      <div class="gu" id="u-standby"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="save-indicator" style="position:fixed;left:10px;bottom:8px;z-index:99;font-size:11px;font-weight:700;color:var(--mt);font-family:var(--fn);">● 자동저장</div><button id="mbtn" onclick="toggleMenu()">☰ 메뉴</button>
+<div id="mpop">
+  <button class="mi3" onclick="toggleTheme()">🌙 주간/야간</button>
+  <button class="mi3" onclick="captureAll()">📸 전체 PNG저장</button>
+  <button class="mi3" onclick="printCapture()">🖨 인쇄/PDF저장</button>
+  <button class="mi3" onclick="saveJSON()">💾 저장(JSON)</button>
+  <button class="mi3" onclick="document.getElementById('load-fi').click()">📂 불러오기</button>
+  <button class="mi3" onclick="openFS('occ')">⛶ 재난현황 전체화면</button>
+  <button class="mi3" onclick="openFS('tl')">⛶ 조치사항 전체화면</button>
+  <button class="mi3" onclick="openFS('grp')">⛶ 조편성 전체화면</button>
+  <button class="mi3" onclick="openMapEd()">⛶ 작전도 전용창</button>
+  <button class="mi3" onclick="resetAll()" style="color:#dc2626;">🗑 전체초기화</button>
+  <input type="file" id="load-fi" accept=".json" style="display:none;" onchange="loadJSON(this)"/>
+</div>
+
+<!-- 전체화면 오버레이 -->
+<div id="fso">
+  <button id="fso-cl" onclick="closeFS()">✕ 닫기 (ESC)</button>
+  <div id="fso-ct"></div>
+</div>
+
+<!-- 작전도 전용창 -->
+<div id="mped">
+  <div id="mped-tools">
+    <div id="mped-ttl">작전도 전용창 <button id="mped-cl" onclick="closeMapEd()">✕ 닫기</button></div>
+
+    <div class="ts2"><div class="ts2-t">배경 / 참조사진</div>
+      <div style="display:flex;gap:4px;">
+        <button class="tb" style="flex:1;" onclick="document.getElementById('bg-up').click()">🗺 배경</button>
+        <button class="tb" style="flex:1;" onclick="document.getElementById('ph-up').click()">📷 참조사진</button>
+      </div>
+      <input type="file" id="bg-up" accept="image/*" style="display:none;" onchange="loadBg(this)"/>
+      <input type="file" id="ph-up" accept="image/*" style="display:none;" onchange="loadPhoto(this)"/>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:4px;font-size:12px;font-weight:700;color:var(--tx);">
+        투명도 <input type="range" id="bg-op" min="20" max="100" value="100" style="flex:1;" oninput="setBgOp(this.value)"/>
+        <span id="bg-op-v">100%</span>
+      </div>
+    </div>
+
+    <div class="ts2"><div class="ts2-t">기본 도구</div>
+      <div class="tbg">
+        <button class="tb" onclick="addIcon('🔥','화점','#dc2626')"><span class="te">🔥</span>화점</button>
+        <button class="tb" onclick="addIcon('🧯','소화전','#dc2626')"><span class="te">🧯</span>소화전</button>
+        <button class="tb" onclick="addIcon('🚒','선착대','#dc2626')"><span class="te">🚒</span>선착대</button>
+        <button class="tb" onclick="addIcon('🏠','건물','#64748b')"><span class="te">🏠</span>건물</button>
+        <button class="tb" onclick="addIcon('⛑️','구조자','#16a34a')"><span class="te">⛑️</span>구조자</button>
+        <button class="tb" onclick="addIcon('⚠️','위험','#f59e0b')"><span class="te">⚠️</span>위험</button>
+      </div>
+    </div>
+
+    <div class="ts2"><div class="ts2-t">선 그리기 <span id="draw-st" style="color:#dc2626;font-size:11px;"></span></div>
+      <div class="tbg" style="margin-bottom:4px;">
+        <button class="tb" id="ln-water" onclick="setLM('water','#0284c7','급수선')"><span class="te">💧</span>급수선</button>
+        <button class="tb" id="ln-spray" onclick="setLM('spray','#dc2626','방수선')"><span class="te">🚒</span>방수선</button>
+        <button class="tb" id="ln-c1" onclick="setLM('c1','#fbbf24','1차통제')"><span class="te">🟡</span>1차통제</button>
+        <button class="tb" id="ln-c2" onclick="setLM('c2','#f97316','2차통제')"><span class="te">🟠</span>2차통제</button>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button class="tb" id="draw-tog" onclick="toggleDraw()" style="flex:1;">✏ 그리기 시작</button>
+        <button class="tb" onclick="undoLine()" style="flex:1;">↩ 되돌리기</button>
+      </div>
+      <div style="font-size:10px;color:var(--mt);margin-top:2px;">시작점→끝점 클릭 | ESC=취소</div>
+    </div>
+
+    <div class="ts2"><div class="ts2-t">선택 아이콘 크기</div>
+      <div style="display:flex;gap:4px;">
+        <button class="tb" onclick="resizeSel(.7)" style="flex:1;">소</button>
+        <button class="tb" onclick="resizeSel(1.0)" style="flex:1;">중</button>
+        <button class="tb" onclick="resizeSel(1.35)" style="flex:1;">대</button>
+      </div>
+    </div>
+
+    <div class="ts2"><div class="ts2-t">경기도 차량 DB</div>
+      <select class="ss" id="vc-station" onchange="filterV()"><option value="">소방서 전체</option></select>
+      <div style="display:flex;gap:4px;">
+        <select class="ss" id="vc-ctr" onchange="filterV()"><option value="">센터 전체</option></select>
+        <input class="si" id="vc-srch" placeholder="검색" oninput="filterV()"/>
+      </div>
+      <div id="v-list" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;"></div>
+    </div>
+
+    <div class="ts2"><div class="ts2-t">통제단 텐트</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">
+        <button class="tb" onclick="addIcon('⛺','대응계획부','#7c3aed')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">⛺</span><span style="font-size:10px;font-weight:900;margin-top:2px;">대응계획부</span></button>
+        <button class="tb" onclick="addIcon('⛺','현장지휘부','#1a3a6b')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">⛺</span><span style="font-size:10px;font-weight:900;margin-top:2px;">현장지휘부</span></button>
+        <button class="tb" onclick="addIcon('⛺','자원지원부','#0284c7')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">⛺</span><span style="font-size:10px;font-weight:900;margin-top:2px;">자원지원부</span></button>
+        <button class="tb" onclick="addIcon('📢','언론브리핑','#64748b')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">📢</span><span style="font-size:10px;font-weight:900;margin-top:2px;">언론브리핑</span></button>
+        <button class="tb" onclick="addIcon('🏥','응급의료소','#dc2626')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">🏥</span><span style="font-size:10px;font-weight:900;margin-top:2px;">응급의료소</span></button>
+        <button class="tb" onclick="addIcon('🏥','임시의료소','#f97316')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">🏥</span><span style="font-size:10px;font-weight:900;margin-top:2px;">임시의료소</span></button>
+        <button class="tb" onclick="addIcon('📦','자원집결지','#16a34a')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">📦</span><span style="font-size:10px;font-weight:900;margin-top:2px;">자원집결지</span></button>
+        <button class="tb" onclick="addIcon('😴','회복지원','#0891b2')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">😴</span><span style="font-size:10px;font-weight:900;margin-top:2px;">회복지원</span></button>
+        <button class="tb" onclick="addIcon('🚌','자원대기소','#854d0e')" style="flex-direction:column;height:48px;"><span style="font-size:16px;">🚌</span><span style="font-size:10px;font-weight:900;margin-top:2px;">자원대기소</span></button>
+      </div></div>
+    <div class="ts2"><div class="ts2-t">수기 아이콘 생성</div>
+      <div style="display:flex;gap:4px;margin-bottom:4px;">
+        <input class="si" id="custom-label" placeholder="이름 예)파주펌프" style="flex:1;"/>
+        <select class="ss" id="custom-emoji" style="width:65px;">
+          <option value="🚒">🚒펌프</option>
+          <option value="🚛">🚛탱크</option>
+          <option value="🚑">🚑구급</option>
+          <option value="🛠️">🛠️구조</option>
+          <option value="🪜">🪜사다리</option>
+          <option value="📡">📡지휘</option>
+          <option value="🚚">🚚장비</option>
+          <option value="🤖">🤖무인</option>
+          <option value="🚐">🚐기타</option>
+          <option value="⛺">⛺텐트</option>
+          <option value="🏥">🏥의료</option>
+          <option value="📦">📦집결</option>
+        </select>
+      </div>
+      <button class="tb" onclick="addCustomIcon()" style="width:100%;background:var(--pb);color:#fff;border-color:var(--pb);">+ 아이콘 생성</button>
+    </div>
+        <div class="ts2"><div class="ts2-t">작전도 관리</div>
+      <div style="display:flex;gap:4px;">
+        <button class="tb" onclick="toggleLgd()" style="flex:1;">범례</button>
+        <button class="tb" onclick="clearMap()" style="flex:1;color:#dc2626;">초기화</button>
+      </div>
+    </div>
+  </div>
+  <div id="mped-cw"></div>
+</div>
+
+<script>
+// ══ 차량 DB ══
+const VDB=[
+// ─── 김포소방서 ───────────────────────────────
+{s:'김포',c:'현장지휘단',v:'지휘차',n:'현장지휘단지휘차',crew:4,e:'📡'},
+{s:'김포',c:'현장지휘단',v:'안전지원차',n:'현장지휘단안전지원차',crew:2,e:'📡'},
+{s:'김포',c:'현장지휘단',v:'화재조사차',n:'현장지휘단화재조사차',crew:2,e:'📡'},
+{s:'김포',c:'중앙',v:'펌프차',n:'중앙펌프차-1',crew:5,e:'🚒'},
+{s:'김포',c:'중앙',v:'펌프차',n:'중앙펌프차-2',crew:5,e:'🚒'},
+{s:'김포',c:'중앙',v:'탱크차',n:'중앙소방물탱크차-1',crew:2,e:'🚛'},
+{s:'김포',c:'중앙',v:'탱크차',n:'중앙소방물탱크차-2',crew:2,e:'🚛'},
+{s:'김포',c:'중앙',v:'탱크차',n:'중앙소방물탱크차-3',crew:2,e:'🚛'},
+{s:'김포',c:'중앙',v:'구급차',n:'중앙특수구급차',crew:3,e:'🚑'},
+{s:'김포',c:'중앙',v:'구급차',n:'중앙음압구급차',crew:3,e:'🚑'},
+{s:'김포',c:'중앙',v:'굴절차',n:'중앙굴절차',crew:2,e:'🪜'},
+{s:'김포',c:'중앙',v:'조연차',n:'중앙조연차',crew:1,e:'🚒'},
+{s:'김포',c:'고촌',v:'펌프차',n:'고촌펌프차',crew:5,e:'🚒'},
+{s:'김포',c:'고촌',v:'탱크차',n:'고촌소방물탱크차',crew:2,e:'🚛'},
+{s:'김포',c:'고촌',v:'구급차',n:'고촌특수구급차',crew:3,e:'🚑'},
+{s:'김포',c:'마산',v:'펌프차',n:'마산펌프차',crew:5,e:'🚒'},
+{s:'김포',c:'마산',v:'탱크차',n:'마산소방물탱크차',crew:2,e:'🚛'},
+{s:'김포',c:'마산',v:'구급차',n:'마산특수구급차',crew:3,e:'🚑'},
+{s:'김포',c:'마산',v:'사다리차',n:'마산사다리차',crew:2,e:'🪜'},
+{s:'김포',c:'통진',v:'펌프차',n:'통진펌프차-1',crew:5,e:'🚒'},
+{s:'김포',c:'통진',v:'펌프차',n:'통진펌프차-2',crew:5,e:'🚒'},
+{s:'김포',c:'통진',v:'펌프차',n:'통진펌프차-3',crew:5,e:'🚒'},
+{s:'김포',c:'통진',v:'탱크차',n:'통진소방물탱크차',crew:2,e:'🚛'},
+{s:'김포',c:'통진',v:'구급차',n:'통진특수구급차-1',crew:3,e:'🚑'},
+{s:'김포',c:'통진',v:'구급차',n:'통진특수구급차-2',crew:3,e:'🚑'},
+{s:'김포',c:'통진',v:'구급차',n:'통진특수구급차-3',crew:3,e:'🚑'},
+{s:'김포',c:'양촌',v:'펌프차',n:'양촌펌프차',crew:5,e:'🚒'},
+{s:'김포',c:'양촌',v:'탱크차',n:'양촌소방물탱크차',crew:2,e:'🚛'},
+{s:'김포',c:'양촌',v:'구급차',n:'양촌특수구급차',crew:3,e:'🚑'},
+{s:'김포',c:'양촌',v:'화학차',n:'양촌고성능화학차',crew:2,e:'🚛'},
+{s:'김포',c:'대곶',v:'펌프차',n:'대곶펌프차',crew:5,e:'🚒'},
+{s:'김포',c:'대곶',v:'탱크차',n:'대곶소방물탱크차',crew:2,e:'🚛'},
+{s:'김포',c:'대곶',v:'구급차',n:'대곶특수구급차',crew:3,e:'🚑'},
+{s:'김포',c:'대곶',v:'화학차',n:'대곶고성능화학차',crew:2,e:'🚛'},
+{s:'김포',c:'하성',v:'펌프차',n:'하성펌프차',crew:5,e:'🚒'},
+{s:'김포',c:'하성',v:'탱크차',n:'하성소방물탱크차',crew:2,e:'🚛'},
+{s:'김포',c:'하성',v:'구급차',n:'하성특수구급차',crew:3,e:'🚑'},
+{s:'김포',c:'구조대',v:'구조공작차',n:'구조대구조공작차',crew:4,e:'🛠️'},
+{s:'김포',c:'구조대',v:'장비운반차',n:'구조대장비운반차',crew:2,e:'🚚'},
+{s:'김포',c:'구조대',v:'구급차',n:'구조대특수구급차',crew:3,e:'🚑'},
+{s:'김포',c:'수난구조대',v:'펌프차',n:'수난구조대펌프차',crew:5,e:'🚒'},
+{s:'김포',c:'수난구조대',v:'장비운반차',n:'수난구조대장비운반차',crew:2,e:'🚚'},
+
+// ─── 경기도특수대응단 ─────────────────────────
+{s:'특수대응단',c:'특수대응1',v:'화학차',n:'특수1화학차',crew:4,e:'🚛'},
+{s:'특수대응단',c:'특수대응1',v:'화학탱크차',n:'특수1화학탱크차',crew:2,e:'🚛'},
+{s:'특수대응단',c:'특수대응2',v:'구조공작차',n:'특수2구조공작차',crew:4,e:'🛠️'},
+{s:'특수대응단',c:'특수대응2',v:'장비운반차',n:'특수2장비운반차',crew:2,e:'🚚'},
+{s:'특수대응단',c:'본부',v:'지휘차',n:'특수대응단지휘차',crew:4,e:'📡'},
+
+// ─── 일산소방서 ───────────────────────────────
+{s:'일산',c:'주엽',v:'펌프차',n:'주엽펌프차',crew:5,e:'🚒'},
+{s:'일산',c:'주엽',v:'탱크차',n:'주엽소방물탱크차',crew:2,e:'🚛'},
+{s:'일산',c:'주엽',v:'구급차',n:'주엽특수구급차',crew:3,e:'🚑'},
+{s:'일산',c:'탄현',v:'펌프차',n:'탄현펌프차',crew:5,e:'🚒'},
+{s:'일산',c:'탄현',v:'탱크차',n:'탄현소방물탱크차',crew:2,e:'🚛'},
+{s:'일산',c:'탄현',v:'구급차',n:'탄현특수구급차',crew:3,e:'🚑'},
+{s:'일산',c:'일산',v:'펌프차',n:'일산펌프차',crew:5,e:'🚒'},
+{s:'일산',c:'일산',v:'탱크차',n:'일산소방물탱크차',crew:2,e:'🚛'},
+{s:'일산',c:'일산',v:'구급차',n:'일산특수구급차',crew:3,e:'🚑'},
+{s:'일산',c:'백석',v:'펌프차',n:'백석펌프차',crew:5,e:'🚒'},
+{s:'일산',c:'백석',v:'탱크차',n:'백석소방물탱크차',crew:2,e:'🚛'},
+{s:'일산',c:'백석',v:'구급차',n:'백석특수구급차',crew:3,e:'🚑'},
+{s:'일산',c:'식사',v:'펌프차',n:'식사펌프차',crew:5,e:'🚒'},
+{s:'일산',c:'식사',v:'탱크차',n:'식사소방물탱크차',crew:2,e:'🚛'},
+{s:'일산',c:'일산',v:'구조공작차',n:'일산구조공작차',crew:4,e:'🛠️'},
+{s:'일산',c:'일산',v:'사다리차',n:'일산사다리차',crew:2,e:'🪜'},
+{s:'일산',c:'일산',v:'굴절차',n:'일산굴절차',crew:2,e:'🪜'},
+{s:'일산',c:'일산',v:'지휘차',n:'일산지휘차',crew:4,e:'📡'},
+
+// ─── 고양소방서 ───────────────────────────────
+{s:'고양',c:'능곡',v:'펌프차',n:'능곡펌프차',crew:5,e:'🚒'},
+{s:'고양',c:'능곡',v:'탱크차',n:'능곡소방물탱크차',crew:2,e:'🚛'},
+{s:'고양',c:'능곡',v:'구급차',n:'능곡특수구급차',crew:3,e:'🚑'},
+{s:'고양',c:'원당',v:'펌프차',n:'원당펌프차',crew:5,e:'🚒'},
+{s:'고양',c:'원당',v:'탱크차',n:'원당소방물탱크차',crew:2,e:'🚛'},
+{s:'고양',c:'원당',v:'구급차',n:'원당특수구급차',crew:3,e:'🚑'},
+{s:'고양',c:'화정',v:'펌프차',n:'화정펌프차',crew:5,e:'🚒'},
+{s:'고양',c:'화정',v:'탱크차',n:'화정소방물탱크차',crew:2,e:'🚛'},
+{s:'고양',c:'화정',v:'구급차',n:'화정특수구급차',crew:3,e:'🚑'},
+{s:'고양',c:'행신',v:'펌프차',n:'행신펌프차',crew:5,e:'🚒'},
+{s:'고양',c:'행신',v:'탱크차',n:'행신소방물탱크차',crew:2,e:'🚛'},
+{s:'고양',c:'고양',v:'구조공작차',n:'고양구조공작차',crew:4,e:'🛠️'},
+{s:'고양',c:'고양',v:'사다리차',n:'고양사다리차',crew:2,e:'🪜'},
+{s:'고양',c:'고양',v:'굴절차',n:'고양굴절차',crew:2,e:'🪜'},
+{s:'고양',c:'고양',v:'화학차',n:'고양고성능화학차',crew:2,e:'🚛'},
+{s:'고양',c:'고양',v:'지휘차',n:'고양지휘차',crew:4,e:'📡'},
+
+// ─── 부천소방서 ───────────────────────────────
+{s:'부천',c:'범박',v:'펌프차',n:'범박펌프차',crew:5,e:'🚒'},
+{s:'부천',c:'범박',v:'탱크차',n:'범박소방물탱크차',crew:2,e:'🚛'},
+{s:'부천',c:'범박',v:'구급차',n:'범박특수구급차',crew:3,e:'🚑'},
+{s:'부천',c:'소사',v:'펌프차',n:'소사펌프차',crew:5,e:'🚒'},
+{s:'부천',c:'소사',v:'탱크차',n:'소사소방물탱크차',crew:2,e:'🚛'},
+{s:'부천',c:'소사',v:'구급차',n:'소사특수구급차',crew:3,e:'🚑'},
+{s:'부천',c:'오정',v:'펌프차',n:'오정펌프차',crew:5,e:'🚒'},
+{s:'부천',c:'오정',v:'탱크차',n:'오정소방물탱크차',crew:2,e:'🚛'},
+{s:'부천',c:'오정',v:'구급차',n:'오정특수구급차',crew:3,e:'🚑'},
+{s:'부천',c:'상동',v:'펌프차',n:'상동펌프차',crew:5,e:'🚒'},
+{s:'부천',c:'상동',v:'탱크차',n:'상동소방물탱크차',crew:2,e:'🚛'},
+{s:'부천',c:'중동',v:'펌프차',n:'중동펌프차',crew:5,e:'🚒'},
+{s:'부천',c:'중동',v:'탱크차',n:'중동소방물탱크차',crew:2,e:'🚛'},
+{s:'부천',c:'부천',v:'구조공작차',n:'부천구조공작차',crew:4,e:'🛠️'},
+{s:'부천',c:'부천',v:'사다리차',n:'부천사다리차',crew:2,e:'🪜'},
+{s:'부천',c:'부천',v:'굴절차',n:'부천굴절차',crew:2,e:'🪜'},
+{s:'부천',c:'부천',v:'화학차',n:'부천고성능화학차',crew:2,e:'🚛'},
+{s:'부천',c:'부천',v:'지휘차',n:'부천지휘차',crew:4,e:'📡'},
+
+// ─── 시흥소방서 ───────────────────────────────
+{s:'시흥',c:'은행',v:'펌프차',n:'은행펌프차',crew:5,e:'🚒'},
+{s:'시흥',c:'은행',v:'탱크차',n:'은행소방물탱크차',crew:2,e:'🚛'},
+{s:'시흥',c:'은행',v:'구급차',n:'은행특수구급차',crew:3,e:'🚑'},
+{s:'시흥',c:'정왕',v:'펌프차',n:'정왕펌프차',crew:5,e:'🚒'},
+{s:'시흥',c:'정왕',v:'탱크차',n:'정왕소방물탱크차',crew:2,e:'🚛'},
+{s:'시흥',c:'정왕',v:'구급차',n:'정왕특수구급차',crew:3,e:'🚑'},
+{s:'시흥',c:'신천',v:'펌프차',n:'신천펌프차',crew:5,e:'🚒'},
+{s:'시흥',c:'신천',v:'탱크차',n:'신천소방물탱크차',crew:2,e:'🚛'},
+{s:'시흥',c:'목감',v:'펌프차',n:'목감펌프차',crew:5,e:'🚒'},
+{s:'시흥',c:'목감',v:'탱크차',n:'목감소방물탱크차',crew:2,e:'🚛'},
+{s:'시흥',c:'시흥',v:'구조공작차',n:'시흥구조공작차',crew:4,e:'🛠️'},
+{s:'시흥',c:'시흥',v:'사다리차',n:'시흥사다리차',crew:2,e:'🪜'},
+{s:'시흥',c:'시흥',v:'화학차',n:'시흥고성능화학차',crew:2,e:'🚛'},
+{s:'시흥',c:'시흥',v:'지휘차',n:'시흥지휘차',crew:4,e:'📡'},
+
+// ─── 광명소방서 ───────────────────────────────
+{s:'광명',c:'하안',v:'펌프차',n:'하안펌프차',crew:5,e:'🚒'},
+{s:'광명',c:'하안',v:'탱크차',n:'하안소방물탱크차',crew:2,e:'🚛'},
+{s:'광명',c:'하안',v:'구급차',n:'하안특수구급차',crew:3,e:'🚑'},
+{s:'광명',c:'철산',v:'펌프차',n:'철산펌프차',crew:5,e:'🚒'},
+{s:'광명',c:'철산',v:'탱크차',n:'철산소방물탱크차',crew:2,e:'🚛'},
+{s:'광명',c:'철산',v:'구급차',n:'철산특수구급차',crew:3,e:'🚑'},
+{s:'광명',c:'소하',v:'펌프차',n:'소하펌프차',crew:5,e:'🚒'},
+{s:'광명',c:'소하',v:'탱크차',n:'소하소방물탱크차',crew:2,e:'🚛'},
+{s:'광명',c:'광명',v:'구조공작차',n:'광명구조공작차',crew:4,e:'🛠️'},
+{s:'광명',c:'광명',v:'사다리차',n:'광명사다리차',crew:2,e:'🪜'},
+{s:'광명',c:'광명',v:'지휘차',n:'광명지휘차',crew:4,e:'📡'},
+
+// ─── 안양소방서 ───────────────────────────────
+{s:'안양',c:'박달',v:'펌프차',n:'박달펌프차',crew:5,e:'🚒'},
+{s:'안양',c:'박달',v:'탱크차',n:'박달소방물탱크차',crew:2,e:'🚛'},
+{s:'안양',c:'박달',v:'구급차',n:'박달특수구급차',crew:3,e:'🚑'},
+{s:'안양',c:'만안',v:'펌프차',n:'만안펌프차',crew:5,e:'🚒'},
+{s:'안양',c:'만안',v:'탱크차',n:'만안소방물탱크차',crew:2,e:'🚛'},
+{s:'안양',c:'만안',v:'구급차',n:'만안특수구급차',crew:3,e:'🚑'},
+{s:'안양',c:'평안',v:'펌프차',n:'평안펌프차',crew:5,e:'🚒'},
+{s:'안양',c:'평안',v:'탱크차',n:'평안소방물탱크차',crew:2,e:'🚛'},
+{s:'안양',c:'호계',v:'펌프차',n:'호계펌프차',crew:5,e:'🚒'},
+{s:'안양',c:'호계',v:'탱크차',n:'호계소방물탱크차',crew:2,e:'🚛'},
+{s:'안양',c:'안양',v:'구조공작차',n:'안양구조공작차',crew:4,e:'🛠️'},
+{s:'안양',c:'안양',v:'사다리차',n:'안양사다리차',crew:2,e:'🪜'},
+{s:'안양',c:'안양',v:'굴절차',n:'안양굴절차',crew:2,e:'🪜'},
+{s:'안양',c:'안양',v:'지휘차',n:'안양지휘차',crew:4,e:'📡'},
+];
+// ══ 상태 ══
+let S={theme:'day',icons:[],lines:[],units:[],tl:[]};
+let selId=null,dragUId=null,drawMode=false,drawStart=null;
+let LM={type:'water',color:'#0284c7',label:'급수선'};
+let alertMode=0;
+
+// ══ 시계 ══
+function tick(){const n=new Date(),d=['일','월','화','수','목','금','토'];document.getElementById('clock').textContent=`${n.getFullYear()}.${n.getMonth()+1}.${n.getDate()}.(${d[n.getDay()]}) ${String(n.getHours()).padStart(2,'0')}시${String(n.getMinutes()).padStart(2,'0')}분${String(n.getSeconds()).padStart(2,'0')}초`;}
+setInterval(tick,1000);tick();
+
+// ══ 긴급메시지 ══
+function cycleAlert(){
+  alertMode=(alertMode+1)%3;
+  const i=document.getElementById('alert-inp'),b=document.getElementById('amode-btn');
+  i.className='';
+  if(alertMode===1){i.className='ab';b.textContent='깜빡';}
+  else if(alertMode===2){i.className='am';b.textContent='흐름';}
+  else b.textContent='고정';
+}
+
+// ══ 테마 ══
+function toggleTheme(){S.theme=S.theme==='day'?'night':'day';document.body.classList.toggle('night',S.theme==='night');closeMenu();autoSave();}
+
+// ══ 메뉴 ══
+function toggleMenu(){document.getElementById('mpop').classList.toggle('show');}
+function closeMenu(){document.getElementById('mpop').classList.remove('show');}
+document.addEventListener('click',e=>{if(!e.target.closest('#mbtn')&&!e.target.closest('#mpop'))closeMenu();});
+
+// ══ 전체화면 ══
+function openFS(type){
+  var ov=document.getElementById('fso'),fc=document.getElementById('fso-ct');
+  fc.innerHTML='';ov.classList.add('show');closeMenu();
+  var fv=function(id){return document.getElementById(id)?document.getElementById(id).value||'-':'-';};
+  if(type==='occ'){
+    fc.innerHTML='<div style="height:100%;display:flex;flex-direction:column;background:#f0f6ff;">' +
+      '<div style="background:#1a3a6b;color:#fff;font-size:28px;font-weight:900;text-align:center;padding:16px;letter-spacing:.15em;flex-shrink:0;">재난발생 현황</div>' +
+      '<div style="flex:1;overflow-y:auto;padding:24px 36px;font-size:19px;color:#0f172a;">' +
+      '<div style="font-size:18px;font-weight:900;border-bottom:2px solid #1a3a6b;padding-bottom:5px;margin-bottom:12px;">■ 발생개요</div>' +
+      '<p style="margin-bottom:10px;font-weight:700;">● 일시 : '+fv('f-time')+' ( '+fv('f-bh')+' : '+fv('f-bm')+' 기준 )</p>' +
+      '<p style="margin-bottom:10px;padding-left:18px;font-weight:700;">- 선착대도착 : '+fv('f-first')+' / 대응단계 : '+(stageVal||'-')+'</p>' +
+      '<p style="margin-bottom:10px;font-weight:700;">● 주소 : '+fv('f-addr')+'</p>' +
+      '<p style="margin-bottom:10px;font-weight:700;">● 대상 : '+fv('f-target')+'</p>' +
+      '<p style="margin-bottom:6px;padding-left:18px;font-weight:700;">- 용도 : '+fv('f-use')+'</p>' +
+      '<p style="margin-bottom:10px;padding-left:18px;font-weight:700;">- 구조 : '+(document.getElementById('f-struct')?document.getElementById('f-struct').value||'-':'-')+'</p>' +
+      '<p style="margin-bottom:10px;font-weight:700;">● 원인 : '+fv('f-cause')+'</p>' +
+      '<p style="margin-bottom:14px;font-weight:700;">● 내용 : '+fv('f-content')+'</p>' +
+      '<div style="font-size:18px;font-weight:900;border-bottom:2px solid #1a3a6b;padding-bottom:5px;margin-bottom:12px;">■ 피해상황</div>' +
+      '<p style="margin-bottom:8px;font-weight:700;">● 인명피해 : 총 '+fv('f-cas-total')+'명 ( 사망 '+fv('f-death')+' / 중상 '+fv('f-heavy')+' / 경상 '+fv('f-light')+' )</p>' +
+      '<p style="margin-bottom:14px;font-weight:700;">● 재산피해 : '+fv('f-prop')+' 만원</p>' +
+      '<div style="font-size:18px;font-weight:900;border-bottom:2px solid #1a3a6b;padding-bottom:5px;margin-bottom:12px;">■ 동원현황</div>' +
+      '<p style="margin-bottom:8px;font-weight:700;">● 인원 : 총 '+fv('f-total')+'명 ( 소방 '+fv('f-fire')+' / 시·도 '+fv('f-city')+' / 경찰 '+fv('f-police')+' / 기타 '+fv('f-other')+' )</p>' +
+      '<p style="margin-bottom:6px;font-weight:700;">● 차량 : 총 '+fv('f-vehtot')+'대</p>' +
+      '<p style="margin-bottom:6px;padding-left:18px;font-size:17px;font-weight:700;">지휘 '+fv('v-cmd')+' / 펌프 '+fv('v-pump')+' / 탱크 '+fv('v-tank')+' / 화학 '+fv('v-chem')+' / 고가 '+fv('v-ladder')+' / 굴절 '+fv('v-bend')+' / 구조 '+fv('v-rescue')+' / 구급 '+fv('v-amb')+' / 기타 '+fv('v-etc')+'</p>' +
+      '<p style="margin-bottom:6px;font-weight:700;">● 장비 : '+fv('f-equip')+'</p>' +
+      '</div></div>';
+  } else if(type==='tl'){
+    var rows=S.tl.filter(function(r){return r.action;});
+    var tbody=rows.map(function(r,i){
+      return '<tr style="background:'+(i%2===0?'#f8faff':'#eef4ff')+';">' +
+        '<td style="padding:12px 8px;font-size:20px;font-weight:900;text-align:center;border:1px solid rgba(26,58,107,.2);">'+r.time+'</td>' +
+        '<td style="padding:12px 8px;font-size:20px;font-weight:700;border:1px solid rgba(26,58,107,.2);">'+r.action+'</td>' +
+        '<td style="padding:12px 8px;font-size:18px;text-align:center;border:1px solid rgba(26,58,107,.2);">'+r.note+'</td>' +
+        '</tr>';
+    }).join('');
+    fc.innerHTML='<div style="height:100%;display:flex;flex-direction:column;background:#f0f6ff;">' +
+      '<div style="background:#1a3a6b;color:#fff;font-size:28px;font-weight:900;text-align:center;padding:16px;letter-spacing:.15em;flex-shrink:0;">시간대별 조치사항</div>' +
+      '<div style="flex:1;overflow-y:auto;">' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+      '<thead><tr style="background:#1a3a6b;color:#fff;">' +
+      '<th style="padding:12px 8px;font-size:20px;font-weight:900;width:90px;border:1px solid #1a3a6b;">일 시</th>' +
+      '<th style="padding:12px 8px;font-size:20px;font-weight:900;border:1px solid #1a3a6b;">주요조치사항</th>' +
+      '<th style="padding:12px 8px;font-size:20px;font-weight:900;width:90px;border:1px solid #1a3a6b;">비 고</th>' +
+      '</tr></thead><tbody>'+tbody+'</tbody></table></div></div>';
+  } else if(type==='grp'){
+    var cols=['rest','active','standby'];
+    var gtitles={rest:'휴식조',active:'활동조',standby:'대기조'};
+    var gcolors={rest:'#16a34a',active:'#dc2626',standby:'#1d4ed8'};
+    var boxes=cols.map(function(g){
+      var tags=S.units.filter(function(u){return u.group===g;}).map(function(u){
+        return '<span style="background:'+gcolors[g]+';color:#fff;border-radius:7px;padding:8px 18px;font-size:22px;font-weight:900;">'+u.name+'</span>';
+      }).join('');
+      return '<div style="background:#1a3a6b;border:3px solid #1a3a6b;border-radius:7px;overflow:hidden;display:flex;flex-direction:column;">' +
+        '<div style="padding:12px 16px;font-size:26px;font-weight:900;color:#fff;">'+gtitles[g]+'</div>' +
+        '<div style="flex:1;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;align-content:flex-start;">'+tags+'</div></div>';
+    }).join('');
+    fc.innerHTML='<div style="height:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:12px;background:#a8c4e0;">'+boxes+'</div>';
+  }
+}
+
+function closeFS(){document.getElementById('fso').classList.remove('show');}
+
+// ══ 타임라인 ══
+function initTL(){S.tl=[];renderTL();}
+function renderTL(){
+  var tb=document.getElementById('tl-tb');tb.innerHTML='';
+  S.tl.forEach(function(r,i){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td><input class="tli tltime" value="'+r.time+'" placeholder="00:00" data-i="'+i+'" data-f="time" onchange="updTL(this)" spellcheck="false"/></td>'+
+      '<td><input class="tli" value="'+r.action+'" placeholder="주요 조치사항 입력" data-i="'+i+'" data-f="action" onchange="updTL(this)" spellcheck="false"/></td>'+
+      '<td style="position:relative;"><input class="tli tlnote" value="'+r.note+'" data-i="'+i+'" data-f="note" onchange="updTL(this)" spellcheck="false"/>'+
+      '<button onclick="delTLRow('+i+')" style="position:absolute;right:1px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#dc2626;font-size:10px;cursor:pointer;padding:0 2px;">✕</button></td>';
+    tb.appendChild(tr);
+  });
+}
+
+function delTLRow(i){S.tl.splice(i,1);renderTL();autoSave();}
+function updTL(el){S.tl[+el.dataset.i][el.dataset.f]=el.value;autoSave();}
+function addTL(){const n=new Date();const t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');S.tl.push({time:t,action:'',note:''});renderTL();const b=document.getElementById('tl-body');b.scrollTop=b.scrollHeight;setTimeout(()=>{const rows=document.querySelectorAll('#tl-tb tr');const last=rows[rows.length-1];if(last){const inp=last.querySelectorAll('input')[1];if(inp)inp.focus();}},50);autoSave();}
+
+// ══ 조 편성 ══
+function renderUnits(){
+  ['rest','active','standby'].forEach(g=>{
+    const el=document.getElementById('u-'+g);el.innerHTML='';
+    S.units.filter(u=>u.group===g).forEach(u=>{
+      const t=document.createElement('div');
+      t.className=`ut t${g[0]}`;t.draggable=true;
+      t.innerHTML=`<span>${u.name}</span><button class="udl" onclick="delU('${u.id}')">✕</button>`;
+      t.addEventListener('dragstart',()=>dragUId=u.id);
+      t.addEventListener('dblclick',()=>renameU(u.id));
+      el.appendChild(t);
+    });
+  });
+}
+function addU(g){const n=prompt('추가할 분대/자원명:');if(!n||!n.trim()) return;S.units.push({id:'u'+Date.now(),name:n.trim(),group:g});renderUnits();autoSave();}
+function delU(id){S.units=S.units.filter(u=>u.id!==id);renderUnits();autoSave();}
+function dropU(e,g){e.preventDefault();document.querySelectorAll('.gb').forEach(b=>b.classList.remove('dov'));if(!dragUId) return;const u=S.units.find(x=>x.id===dragUId);if(u){u.group=g;renderUnits();autoSave();}dragUId=null;}
+function renameU(id){const u=S.units.find(x=>x.id===id);if(!u) return;const n=prompt('이름 변경:',u.name);if(n&&n.trim()){u.name=n.trim();renderUnits();autoSave();}}
+
+// ══ 작전도 아이콘 ══
+function getCanvas(ed){return document.getElementById(ed?'ed-mc':'mc');}
+function addIcon(emoji,label,color){
+  S.icons.push({id:'ic'+Date.now(),emoji,label,note:'',status:'대기',x:38+Math.random()*24,y:32+Math.random()*36,scale:1.0,color:color||'#1a3a6b'});
+  renderIcons();autoSave();
+}
+
+
+function printCapture(){
+  closeMenu();
+  if(typeof html2canvas !== 'undefined'){
+    var overlay=document.getElementById('cap-overlay');
+    if(overlay){document.getElementById('cap-msg').textContent='📸 상황판 캡처 중...';overlay.classList.add('show');}
+    var hideEls=['mbtn','mpop','tool-tb','map-edbtn','qe','lgd','photo-ov','mini-tool','save-indicator','map-sidebar','sidebar-toggle','amode-btn'];
+    hideEls.forEach(function(id){var el=document.getElementById(id);if(el)el.style.visibility='hidden';});
+    // 인쇄 시 transform 임시 해제 → 실제 크기로 캡처
+    var app=document.getElementById('app');
+    var savedTransform=app.style.transform;
+    var savedWidth=app.style.width;
+    var savedHeight=app.style.height;
+    var savedPosition=app.style.position;
+    app.style.transform='';
+    app.style.width='100%';
+    app.style.height='100vh';
+    app.style.position='';
+    setTimeout(function(){
+      html2canvas(document.getElementById('app'),{
+        scale:2,useCORS:true,allowTaint:true,backgroundColor:'#a8c4e0',logging:false
+      }).then(function(canvas){
+        // 복원
+        hideEls.forEach(function(id){var el=document.getElementById(id);if(el)el.style.visibility='';});
+        // transform 복원
+        app.style.transform=savedTransform;
+        app.style.width=savedWidth;
+        app.style.height=savedHeight;
+        app.style.position=savedPosition;
+        if(overlay)overlay.classList.remove('show');
+        // 새창에서 인쇄
+        var w=window.open('','_blank');
+        var n=new Date();
+        var dateStr=n.getFullYear()+'.'+String(n.getMonth()+1).padStart(2,'0')+'.'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+        w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>김포시 긴급구조통제단 작전상황판</title>'+
+          '<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}'+
+          '.print-header{font-family:"Malgun Gothic",sans-serif;font-size:11px;color:#666;padding:4px 8px;display:flex;justify-content:space-between;}'+
+          'img{width:100%;height:auto;display:block;}'+
+          '@media print{@page{size:A4 landscape;margin:5mm;}.print-header{display:none;}}'+
+          '</style></head><body>'+
+          '<div class="print-header"><span>김포시 긴급구조통제단 작전상황판</span><span>'+dateStr+'</span></div>'+
+          '<img src="'+canvas.toDataURL('image/png')+'" alt="상황판"/>'+
+          '<scr'+'ipt>window.onload=function(){window.print();};<\/scr'+'ipt></body></html>');
+        w.document.close();
+      }).catch(function(){
+        hideEls.forEach(function(id){var el=document.getElementById(id);if(el)el.style.visibility='';});
+        // transform 복원
+        app.style.transform=savedTransform;
+        app.style.width=savedWidth;
+        app.style.height=savedHeight;
+        app.style.position=savedPosition;
+        if(overlay)overlay.classList.remove('show');
+        alert('캡처 실패. Ctrl+P로 인쇄해주세요.');
+      });
+    },300);
+  } else {
+    // 오프라인: 기존 인쇄
+    alert('오프라인 환경입니다.\nCtrl+P를 눌러 인쇄/PDF저장 하세요.');
+    window.print();
+  }
+}
+
+
+var sidebarHidden = false;
+function toggleSidebar(){
+  var sb=document.getElementById('map-sidebar');
+  var tog=document.getElementById('sidebar-toggle');
+  sidebarHidden=!sidebarHidden;
+  if(sidebarHidden){sb.classList.add('hidden');tog.textContent='차량\n배치';}
+  else{sb.classList.remove('hidden');tog.textContent='◀';}
+}
+function filterSB(){
+  var srch=document.getElementById('sb-search')?document.getElementById('sb-search').value.trim():'';
+  var list=document.getElementById('sb-vlist');if(!list) return;
+  list.innerHTML='';
+  var kimpo=VDB.filter(function(v){
+    return v.s==='김포' && (!srch||v.n.indexOf(srch)>=0||v.c.indexOf(srch)>=0||shortVName(v.n,v.s).indexOf(srch)>=0);
+  });
+  kimpo.forEach(function(v){
+    var btn=document.createElement('button');
+    btn.className='sb-btn';
+    var short=shortVName(v.n,v.s);
+    btn.innerHTML='<span class="se">'+v.e+'</span><span style="flex:1;font-size:11px;">'+short+'</span>';
+    btn.onclick=(function(vv){return function(){addVehicle(vv);};})(v);
+    list.appendChild(btn);
+  });
+}
+
+
+var mapZoom = 1.0;
+function applyMapZoom(val){
+  mapZoom = val/100;
+  var zv = document.getElementById('map-zoom-val');
+  if(zv) zv.textContent = val+'%';
+  // 아이콘 배율
+  document.querySelectorAll('.mi2').forEach(function(el){
+    var id = el.id.replace('ed-','').replace('icon-','');
+    var ic = S.icons.find(function(x){return x.id===id;});
+    var base = ic ? (ic.scale||1.0) : 1.0;
+    el.style.transform = 'translate(-50%,-50%) scale('+(base*mapZoom)+')';
+  });
+  // 방면배지 배율
+  document.querySelectorAll('.sb').forEach(function(el){
+    el.style.transform = 'translate(-50%,-50%) scale('+mapZoom+')';
+  });
+  // 선+라벨 배율 — renderLines 재호출
+  renderLines();
+}
+
+function addCustomIcon(){
+  var label = document.getElementById('custom-label') ? document.getElementById('custom-label').value.trim() : '';
+  var emoji = document.getElementById('custom-emoji') ? document.getElementById('custom-emoji').value : '🚒';
+  if(!label){alert('이름을 입력해주세요.');return;}
+  S.icons.push({id:'ic'+Date.now(),emoji:emoji,label:label,note:'',status:'대기',
+    x:38+Math.random()*24, y:32+Math.random()*36, scale:1.0, color:'#1a3a6b'});
+  renderIcons(); autoSave();
+  document.getElementById('custom-label').value = '';
+  var emp = document.getElementById('mc-empty');
+  if(emp) emp.style.display='none';
+}
+function addVehicle(v){
+  var short = shortVName(v.n, v.s);
+  S.icons.push({id:'ic'+Date.now(),emoji:v.e,label:short,note:'',status:'대기',
+    x:25+Math.random()*50, y:20+Math.random()*60, scale:1.0, color:'#1a3a6b'});
+  renderIcons(); autoSave();
+  var emp = document.getElementById('mc-empty');
+  if(emp) emp.style.display='none';
+}
+function renderIcons(){
+  ['mc','ed-mc'].forEach(cid=>{
+    const c=document.getElementById(cid);if(!c) return;
+    c.querySelectorAll('.mi2').forEach(el=>el.remove());
+    S.icons.forEach(ic=>mkIconEl(ic,c));
+  });
+  const emp=document.getElementById('mc-empty');
+  if(emp) emp.style.display=S.icons.length?'none':'flex';
+}
+function mkIconEl(ic,canvas){
+  const el=document.createElement('div');
+  el.className='mi2'+(selId===ic.id?' sel':'');
+  el.id=(canvas.id==='ed-mc'?'ed-':'')+'icon-'+ic.id;
+  el.style.cssText=`left:${ic.x}%;top:${ic.y}%;border-color:${ic.color};transform:translate(-50%,-50%) scale(${ic.scale})`;
+  el.innerHTML=`<span class="ie">${ic.emoji}</span><span class="il">${ic.label}</span>`;
+  var clickTimer=null;
+  el.addEventListener('click',function(e){
+    e.stopPropagation();
+    clearTimeout(clickTimer);
+    clickTimer=setTimeout(function(){selectIC(ic.id);},200);
+  });
+  el.addEventListener('dblclick',function(e){
+    e.stopPropagation();
+    e.preventDefault();
+    clearTimeout(clickTimer);
+    // 약간의 딜레이 후 QE 열기 (mc click 이벤트 처리 후)
+    setTimeout(function(){openQE(ic.id);},50);
+  });
+  // 전용창에서도 삭제버튼 표시 (우클릭)
+  el.addEventListener('contextmenu',function(e){e.preventDefault();e.stopPropagation();if(confirm(ic.label+' 삭제?')){S.icons=S.icons.filter(function(x){return x.id!==ic.id;});document.querySelectorAll('[id$="icon-'+ic.id+'"]').forEach(function(el2){el2.remove();});var emp2=document.getElementById('mc-empty');if(emp2&&!S.icons.length)emp2.style.display='flex';autoSave();}});
+  let dr=false,ox=0,oy=0,rect;
+  el.addEventListener('mousedown',e=>{if(e.button!==0) return;e.stopPropagation();dr=true;rect=canvas.getBoundingClientRect();ox=e.clientX-(ic.x/100*rect.width);oy=e.clientY-(ic.y/100*rect.height);el.style.cursor='grabbing';});
+  document.addEventListener('mousemove',e=>{
+    if(!dr) return;
+    ic.x=Math.min(97,Math.max(3,(e.clientX-ox)/rect.width*100));
+    ic.y=Math.min(97,Math.max(3,(e.clientY-oy)/rect.height*100));
+    ['','ed-'].forEach(p=>{const i2=document.getElementById(p+'icon-'+ic.id);if(i2){i2.style.left=ic.x+'%';i2.style.top=ic.y+'%';}});
+  });
+  document.addEventListener('mouseup',()=>{if(dr){dr=false;el.style.cursor='grab';autoSave();}});
+  canvas.appendChild(el);
+}
+function selectIC(id){selId=id;document.querySelectorAll('.mi2').forEach(el=>el.classList.toggle('sel',el.id.endsWith('icon-'+id)));}
+function openQE(id){
+  selectIC(id);
+  var ic=S.icons.find(function(x){return x.id===id;});
+  if(!ic) return;
+  var lbl=document.getElementById('qe-lbl');
+  var st=document.getElementById('qe-st');
+  var note=document.getElementById('qe-note');
+  var qe=document.getElementById('qe');
+  if(!qe) return;
+  if(lbl) lbl.value=ic.label||'';
+  if(st) st.value=ic.status||'대기';
+  if(note) note.value=ic.note||'';
+  // style.display로 직접 제어 (classList 우선순위 문제 회피)
+  qe.style.display='block';
+  qe.style.position='fixed';
+  qe.style.right='20px';
+  qe.style.bottom='60px';
+  qe.style.zIndex='9999';
+}
+function closeQE(){
+  selId=null;
+  document.querySelectorAll('.mi2').forEach(function(el){el.classList.remove('sel');});
+  var qe=document.getElementById('qe');
+  if(qe) qe.style.display='none';
+}
+function applyQE(){if(!selId) return;const ic=S.icons.find(x=>x.id===selId);if(!ic) return;ic.label=document.getElementById('qe-lbl').value;ic.status=document.getElementById('qe-st').value;ic.note=document.getElementById('qe-note').value;['','ed-'].forEach(p=>{const el=document.getElementById(p+'icon-'+ic.id);if(el)el.querySelector('.il').textContent=ic.label;});autoSave();}
+function resizeSel(s){if(!selId) return;const ic=S.icons.find(x=>x.id===selId);if(!ic) return;ic.scale=s;['','ed-'].forEach(p=>{const el=document.getElementById(p+'icon-'+ic.id);if(el)el.style.transform=`translate(-50%,-50%) scale(${s})`;});autoSave();}
+function delSel(){if(!selId) return;S.icons=S.icons.filter(x=>x.id!==selId);document.querySelectorAll(`[id$="icon-${selId}"]`).forEach(el=>el.remove());closeQE();if(!S.icons.length){const e=document.getElementById('mc-empty');if(e)e.style.display='flex';}autoSave();}
+
+// ══ 선 그리기 ══
+function setLM(t,c,l){LM={type:t,color:c,label:l};['water','spray','c1','c2'].forEach(k=>{const b=document.getElementById('ln-'+k);if(b)b.classList.toggle('on',k===t);});}
+function toggleDraw(){
+  drawMode=!drawMode;drawStart=null;
+  const btn=document.getElementById('draw-tog'),st=document.getElementById('draw-st');
+  const ed=document.getElementById('mped').classList.contains('show');
+  const svg=document.getElementById(ed?'ed-svg':'mc-svg');
+  if(drawMode){svg.classList.add('da');if(btn){btn.classList.add('on');btn.textContent='✏ 그리기 종료';}if(st)st.textContent='● 활성';}
+  else{svg.classList.remove('da');if(btn){btn.classList.remove('on');btn.textContent='✏ 그리기 시작';}if(st)st.textContent='';rmPrev();}
+}
+function curCanvas(){return document.getElementById(document.getElementById('mped').classList.contains('show')?'ed-mc':'mc');}
+function curSvg(){return document.getElementById(document.getElementById('mped').classList.contains('show')?'ed-svg':'mc-svg');}
+function handleDrawClick(e){
+  if(!drawMode) return;
+  const rect=curCanvas().getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width*100,y=(e.clientY-rect.top)/rect.height*100;
+  if(!drawStart){
+    drawStart={x,y};
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.id='pd';dot.setAttribute('cx',x+'%');dot.setAttribute('cy',y+'%');dot.setAttribute('r','5');dot.setAttribute('fill',LM.color);dot.setAttribute('opacity','.7');
+    curSvg().appendChild(dot);
+  } else {
+    S.lines.push({id:'ln'+Date.now(),...LM,x1:drawStart.x,y1:drawStart.y,x2:x,y2:y});
+    drawStart=null;rmPrev();renderLines();autoSave();
+  }
+}
+function rmPrev(){document.querySelectorAll('#pd,#pl').forEach(el=>el.remove());}
+function undoLine(){if(S.lines.length){S.lines.pop();renderLines();autoSave();}if(drawStart){drawStart=null;rmPrev();}}
+function renderLines(){
+  ['mc-svg','ed-svg'].forEach(function(sid){
+    var svg=document.getElementById(sid);if(!svg) return;
+    svg.innerHTML='';
+    S.lines.forEach(function(ln){
+      var mx=(ln.x1+ln.x2)/2, my=(ln.y1+ln.y2)/2;
+      var dash=ln.type==='water'?'8 4':ln.type==='spray'?'':ln.type==='c1'?'10 5':'14 4';
+      var ns='http://www.w3.org/2000/svg';
+      var mk=function(tag,attrs){
+        var el=document.createElementNS(ns,tag);
+        Object.keys(attrs).forEach(function(k){el.setAttribute(k,attrs[k]);});
+        return el;
+      };
+      // 그림자선
+      var shadow=mk('line',{'x1':ln.x1+'%','y1':ln.y1+'%','x2':ln.x2+'%','y2':ln.y2+'%',
+        'stroke':'rgba(0,0,0,.26)','stroke-width':'7','stroke-linecap':'round'});
+      svg.appendChild(shadow);
+      // 본선
+      var sw = (4 * (mapZoom||1)).toFixed(1);
+      var li=mk('line',{'x1':ln.x1+'%','y1':ln.y1+'%','x2':ln.x2+'%','y2':ln.y2+'%',
+        'stroke':ln.color,'stroke-width':sw,'stroke-linecap':'round'});
+      if(dash)li.setAttribute('stroke-dasharray',dash);
+      li.style.cssText='pointer-events:all;cursor:move;';
+      // 선 드래그 이동
+      (function(line){
+        var dragging=false,startX=0,startY=0,ox1=0,oy1=0,ox2=0,oy2=0;
+        li.addEventListener('mousedown',function(e){
+          if(e.button!==0) return;
+          e.stopPropagation();e.preventDefault();
+          dragging=true;
+          var canvas=svg.parentElement;
+          var rect=canvas.getBoundingClientRect();
+          startX=(e.clientX-rect.left)/rect.width*100;
+          startY=(e.clientY-rect.top)/rect.height*100;
+          ox1=line.x1;oy1=line.y1;ox2=line.x2;oy2=line.y2;
+        });
+        document.addEventListener('mousemove',function(e){
+          if(!dragging) return;
+          var canvas=svg.parentElement;
+          var rect=canvas.getBoundingClientRect();
+          var cx=(e.clientX-rect.left)/rect.width*100;
+          var cy=(e.clientY-rect.top)/rect.height*100;
+          var dx=cx-startX, dy=cy-startY;
+          line.x1=Math.min(99,Math.max(1,ox1+dx));
+          line.y1=Math.min(99,Math.max(1,oy1+dy));
+          line.x2=Math.min(99,Math.max(1,ox2+dx));
+          line.y2=Math.min(99,Math.max(1,oy2+dy));
+          renderLines();
+        });
+        document.addEventListener('mouseup',function(){
+          if(dragging){dragging=false;autoSave();}
+        });
+      })(ln);
+      // 우클릭 삭제
+      li.addEventListener('contextmenu',function(ev){
+        ev.preventDefault();ev.stopPropagation();
+        if(confirm(ln.label+' 선을 삭제하시겠습니까?')){
+          S.lines=S.lines.filter(function(x){return x.id!==ln.id;});
+          renderLines();autoSave();
+        }
+      });
+      svg.appendChild(li);
+      // 라벨 텍스트
+      var fs=(13*(mapZoom||1)).toFixed(1);
+      var tx=mk('text',{'x':mx+'%','y':my+'%','fill':ln.color,
+        'font-size':fs,'font-weight':'900','text-anchor':'middle',
+        'paint-order':'stroke','stroke':'white','stroke-width':'3'});
+      tx.textContent=ln.label;
+      tx.style.cssText='pointer-events:all;cursor:move;';
+      tx.addEventListener('contextmenu',function(ev){
+        ev.preventDefault();ev.stopPropagation();
+        if(confirm(ln.label+' 선을 삭제하시겠습니까?')){
+          S.lines=S.lines.filter(function(x){return x.id!==ln.id;});
+          renderLines();autoSave();
+        }
+      });
+      svg.appendChild(tx);
+    });
+  });
+}
+
+function showPL(e,canvas){
+  if(!drawMode||!drawStart) return;
+  const rect=canvas.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width*100,y=(e.clientY-rect.top)/rect.height*100;
+  const svgId=canvas.id==='ed-mc'?'ed-svg':'mc-svg';
+  const svg=document.getElementById(svgId);
+  let pl=svg.querySelector('#pl');
+  if(!pl){pl=document.createElementNS('http://www.w3.org/2000/svg','line');pl.id='pl';svg.appendChild(pl);}
+  ['x1','y1','x2','y2','stroke','stroke-width','opacity','stroke-dasharray'].forEach(k=>pl.removeAttribute(k));
+  pl.setAttribute('x1',drawStart.x+'%');pl.setAttribute('y1',drawStart.y+'%');pl.setAttribute('x2',x+'%');pl.setAttribute('y2',y+'%');
+  pl.setAttribute('stroke',LM.color);pl.setAttribute('stroke-width','3');pl.setAttribute('opacity','.5');pl.setAttribute('stroke-dasharray','5 3');
+}
+
+// ══ 작전도 전용창 ══
+function openMapEd(){
+  const ed=document.getElementById('mped');ed.classList.add('show');closeMenu();
+  if(!document.getElementById('ed-mc')){
+    const wrap=document.getElementById('mped-cw');
+    wrap.innerHTML=`<div id="ed-mc" style="position:relative;width:100%;height:100%;background:var(--mb);background-image:linear-gradient(var(--mg) 1px,transparent 1px),linear-gradient(90deg,var(--mg) 1px,transparent 1px);background-size:18px 18px;">
+      <img id="ed-bg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;display:none;"/>
+      <svg id="ed-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;"></svg>
+      <div class="sb" style="left:50%;top:84%;background:#dc2626;">1방면</div>
+      <div class="sb" style="left:14%;top:50%;background:#ea580c;">2방면</div>
+      <div class="sb" style="left:50%;top:13%;background:#16a34a;">3방면</div>
+      <div class="sb" style="left:85%;top:50%;background:#0284c7;">4방면</div>
+    </div>`;
+    setupSB('ed-mc');
+    const ec=document.getElementById('ed-mc');
+    ec.addEventListener('click',e=>{if(e.target.classList.contains('mi2')||e.target.closest('.mi2')) return;if(drawMode)handleDrawClick(e);else closeQE();});
+    ec.addEventListener('mousemove',e=>showPL(e,ec));
+    // 배경 동기화
+    const mb=document.getElementById('mc-bg');
+    if(mb&&mb.src&&mb.style.display!=='none'){const eb=document.getElementById('ed-bg');eb.src=mb.src;eb.style.display='block';}
+  }
+  initVDB();renderIcons();renderLines();
+  // 전용창 캔버스 크기를 메인과 동일 비율로 설정
+  var mc = document.getElementById('mc');
+  var edMc = document.getElementById('ed-mc');
+  if(mc && edMc){
+    // 메인 작전도 실제 크기 기준으로 전용창 좌측 패딩 조정
+    var mcRect = mc.getBoundingClientRect();
+    var mpedCw = document.getElementById('mped-cw');
+    if(mpedCw){
+      // 전용창 캔버스에 메인 비율 표시용 가이드라인
+      edMc.setAttribute('data-mc-ratio', (mcRect.width/mcRect.height).toFixed(3));
+    }
+  }
+}
+function closeMapEd(){
+  document.getElementById('mped').classList.remove('show');
+  if(drawMode)toggleDraw();
+  // 메인캔버스 기준으로 아이콘 위치 재렌더링
+  setTimeout(function(){renderIcons();renderLines();},100);
+}
+
+// ══ 방면 배지 드래그 ══
+function setupSB(canvasId){
+  const canvas=document.getElementById(canvasId);if(!canvas) return;
+  canvas.querySelectorAll('.sb').forEach(badge=>{
+    let dr=false,ox=0,oy=0,rect;
+    badge.addEventListener('mousedown',e=>{e.stopPropagation();dr=true;rect=canvas.getBoundingClientRect();ox=e.clientX-(parseFloat(badge.style.left)/100*rect.width);oy=e.clientY-(parseFloat(badge.style.top)/100*rect.height);});
+    document.addEventListener('mousemove',e=>{if(!dr) return;badge.style.left=Math.min(94,Math.max(6,(e.clientX-ox)/rect.width*100))+'%';badge.style.top=Math.min(94,Math.max(6,(e.clientY-oy)/rect.height*100))+'%';});
+    document.addEventListener('mouseup',()=>{if(dr){dr=false;autoSave();}});
+    badge.addEventListener('dblclick',e=>{e.stopPropagation();const cur=badge.dataset.cmd||'';const nm=prompt('방면지휘관:',cur);if(nm!==null){badge.dataset.cmd=nm;var full=sec+'방면'+(nm?' - '+nm:'');badge.textContent=full;badge.style.fontSize=full.length>12?'10px':full.length>9?'11px':'12px';}});
+  });
+}
+
+// ══ 배경/사진 ══
+function loadBg(inp){const f=inp.files[0];if(!f) return;const r=new FileReader();r.onload=e=>{['mc-bg','ed-bg'].forEach(id=>{const img=document.getElementById(id);if(img){img.src=e.target.result;img.style.display='block';}});document.getElementById('mc-empty').style.display='none';};r.readAsDataURL(f);}
+function setBgOp(v){['mc-bg','ed-bg'].forEach(id=>{const img=document.getElementById(id);if(img)img.style.opacity=v/100;});document.getElementById('bg-op-v').textContent=v+'%';}
+function loadPhoto(inp){
+  var f=inp.files[0];if(!f) return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var img=document.getElementById('photo-img');
+    if(img) img.src=e.target.result;
+    var ov=document.getElementById('photo-ov');
+    if(ov){ov.classList.add('show');ov.style.left='6px';ov.style.top='6px';}
+    photoPins=[];renderPhotoPins();
+    // 파일 input 초기화 (재선택 가능)
+    if(inp) inp.value='';
+  };
+  r.readAsDataURL(f);
+}
+
+// ══ 참조사진 화점핀 ══
+var pinMode=false;
+var photoPins=[];
+function togglePinMode(){
+  pinMode=!pinMode;
+  var btn=document.getElementById('photo-pin-btn');
+  if(btn){btn.style.background=pinMode?'#16a34a':'rgba(220,38,38,.85)';btn.textContent=pinMode?'📍 핀ON':'📍 화점핀';}
+  var svg=document.getElementById('photo-svg');
+  if(svg)svg.style.cursor=pinMode?'crosshair':'default';
+}
+function addPhotoPin(e){
+  if(!pinMode) return;
+  var img=document.getElementById('photo-img');if(!img) return;
+  var rect=img.getBoundingClientRect();
+  var x=((e.clientX-rect.left)/rect.width*100).toFixed(1);
+  var y=((e.clientY-rect.top)/rect.height*100).toFixed(1);
+  photoPins.push({id:'pp'+Date.now(),x:parseFloat(x),y:parseFloat(y)});
+  renderPhotoPins();
+}
+function renderPhotoPins(){
+  var svg=document.getElementById('photo-svg');if(!svg) return;
+  svg.innerHTML='';
+  photoPins.forEach(function(p){
+    var ns='http://www.w3.org/2000/svg';
+    var g=document.createElementNS(ns,'g');
+    var c=document.createElementNS(ns,'circle');
+    c.setAttribute('cx',p.x+'%');c.setAttribute('cy',p.y+'%');
+    c.setAttribute('r','12');c.setAttribute('fill','rgba(220,38,38,.88)');
+    c.setAttribute('stroke','white');c.setAttribute('stroke-width','2');
+    var t=document.createElementNS(ns,'text');
+    t.setAttribute('x',p.x+'%');t.setAttribute('y',p.y+'%');
+    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','14');t.setAttribute('fill','white');t.textContent='🔥';
+    var d=document.createElementNS(ns,'circle');
+    d.setAttribute('cx',(p.x+3.5)+'%');d.setAttribute('cy',(p.y-3.5)+'%');
+    d.setAttribute('r','7');d.setAttribute('fill','#1a3a6b');
+    d.setAttribute('stroke','white');d.setAttribute('stroke-width','1.5');
+    d.style.cursor='pointer';d.style.pointerEvents='all';
+    var pid=p.id;
+    d.addEventListener('click',function(ev){ev.stopPropagation();photoPins=photoPins.filter(function(x){return x.id!==pid;});renderPhotoPins();});
+    var dt=document.createElementNS(ns,'text');
+    dt.setAttribute('x',(p.x+3.5)+'%');dt.setAttribute('y',(p.y-3.5)+'%');
+    dt.setAttribute('text-anchor','middle');dt.setAttribute('dominant-baseline','middle');
+    dt.setAttribute('font-size','9');dt.setAttribute('fill','white');dt.textContent='✕';
+    dt.style.pointerEvents='none';
+    g.appendChild(c);g.appendChild(t);g.appendChild(d);g.appendChild(dt);
+    svg.appendChild(g);
+  });
+}
+
+function togglePhotoOv(){
+  var ov=document.getElementById('photo-ov');
+  if(!ov) return;
+  if(ov.classList.contains('show')){
+    ov.classList.remove('show');
+  } else {
+    // 사진이 있으면 보여주고, 없으면 파일선택
+    var img=document.getElementById('photo-img');
+    if(img&&img.src&&img.src!==window.location.href){
+      ov.classList.add('show');
+    } else {
+      document.getElementById('photo-file-sb').click();
+    }
+  }
+}
+function hidePhoto(){
+  document.getElementById('photo-ov').classList.remove('show');
+}
+function closePhoto(){
+  document.getElementById('photo-ov').classList.remove('show');
+  photoPins=[];renderPhotoPins();pinMode=false;
+  var btn=document.getElementById('photo-pin-btn');
+  if(btn){btn.style.background='rgba(255,255,255,.2)';btn.textContent='📍 화점핀';}
+  // 파일input 초기화 → 재입력 가능
+  var inp=document.getElementById('ph-up');
+  if(inp) inp.value='';
+  var inp2=document.getElementById('photo-file-input');
+  if(inp2) inp2.value='';
+}
+
+// ══ 미니도구/범례 ══
+function toggleMini(){const t=document.getElementById('mini-tool');t.style.display=t.style.display==='none'?'block':'none';}
+function toggleLgd(){document.getElementById('lgd').classList.toggle('show');}
+function clearMap(){if(!confirm('작전도를 초기화하시겠습니까?')) return;S.icons=[];S.lines=[];renderIcons();renderLines();const e=document.getElementById('mc-empty');if(e)e.style.display='flex';autoSave();}
+
+// ══ 차량 DB ══
+function initVDB(){
+  var stSel = document.getElementById('vc-station');
+  if(stSel && stSel.options.length <= 1){
+    var stations = ['김포','특수대응단','일산','고양','부천','시흥','광명','안양'];
+    stations.forEach(function(s){
+      var o = document.createElement('option'); o.value = s; o.textContent = s+'소방서';
+      if(s==='특수대응단') o.textContent = '경기도특수대응단';
+      if(s==='김포') o.textContent = '김포소방서';
+      stSel.appendChild(o);
+    });
+  }
+  filterV();
+}
+function filterV(){
+  var station = document.getElementById('vc-station') ? document.getElementById('vc-station').value : '';
+  var ctr = document.getElementById('vc-ctr') ? document.getElementById('vc-ctr').value : '';
+  var srch = document.getElementById('vc-srch') ? document.getElementById('vc-srch').value.trim() : '';
+  var list = document.getElementById('v-list'); if(!list) return;
+  list.innerHTML = '';
+  var filtered = VDB.filter(function(v){
+    return (!station || v.s === station) &&
+           (!ctr || v.c === ctr) &&
+           (!srch || v.n.indexOf(srch)>=0 || v.v.indexOf(srch)>=0 || v.c.indexOf(srch)>=0);
+  });
+  filtered.slice(0,40).forEach(function(v){
+    var btn = document.createElement('button');
+    btn.className = 'tb';
+    btn.style.cssText = 'justify-content:flex-start;gap:5px;text-align:left;width:100%;';
+    var short = shortVName(v.n, v.s);
+    btn.innerHTML = '<span>'+v.e+'</span><span style="flex:1;font-size:12px;">'+short+'</span><span style="font-size:10px;opacity:.7;">'+v.crew+'명</span>';
+    btn.onclick = (function(vv){ return function(){ addVehicle(vv); }; })(v);
+    list.appendChild(btn);
+  });
+}
+
+// ══ ESC ══
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(drawMode&&drawStart){drawStart=null;rmPrev();}
+    else if(drawMode)toggleDraw();
+    else{closeQE();closeFS();}
+  }
+});
+
+// ══ 저장 ══
+let svT=null;
+function autoSave(){clearTimeout(svT);svT=setTimeout(()=>localStorage.setItem('gimpo-v61',JSON.stringify(collect())),600);}
+function collect(){
+  const d={theme:S.theme,icons:S.icons,lines:S.lines,units:S.units,tl:S.tl,
+    title:document.getElementById('tit-inp').value,
+    weather:document.getElementById('wthr-inp').value,
+    alert:document.getElementById('alert-inp').value,
+    occ:{},dmg:{},res:{}};
+  ['time','bh','bm','first','stage','addr','target','use','struct','cause','content'].forEach(k=>{d.occ[k]=document.getElementById('f-'+k)?.value||'';});d.occ.struct=document.getElementById('f-struct')?.value||'';
+  ['death','injury','missing','prop'].forEach(k=>{d.dmg[k]=document.getElementById('f-'+k)?.value||'';});
+  ['total','fire','city','police','other','vehtot','equip'].forEach(k=>{d.res[k]=document.getElementById('f-'+k)?.value||'';});
+  ['cmd','pump','tank','chem','ladder','bend','rescue','amb','etc'].forEach(k=>{d.res['v_'+k]=document.getElementById('v-'+k)?.value||'';});
+  return d;
+}
+function applyD(d){
+  if(!d) return;
+  S.theme=d.theme||'day';document.body.classList.toggle('night',S.theme==='night');
+  if(d.title)document.getElementById('tit-inp').value=d.title;
+  if(d.weather)document.getElementById('wthr-inp').value=d.weather;
+  if(d.alert)document.getElementById('alert-inp').value=d.alert;
+  if(d.occ){Object.entries(d.occ).forEach(([k,v])=>{const el=document.getElementById('f-'+k);if(el)el.value=v;});if(d.occ.struct){const st=document.getElementById('f-struct');if(st)st.value=d.occ.struct;}}
+  if(d.dmg)Object.entries(d.dmg).forEach(([k,v])=>{const el=document.getElementById('f-'+k);if(el)el.value=v;});
+  if(d.res)Object.entries(d.res).forEach(([k,v])=>{const id=k.startsWith('v_')?'v-'+k.slice(2):'f-'+k;const el=document.getElementById(id);if(el)el.value=v;});
+  if(d.tl&&d.tl.length){S.tl=d.tl.filter(function(r){return r.action||r.time;});renderTL();}
+  if(d.icons){S.icons=d.icons;renderIcons();}
+  if(d.lines){S.lines=d.lines;renderLines();}
+  if(d.units){S.units=d.units;renderUnits();}
+}
+function saveJSON(){
+  const blob=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const n=new Date();a.download=`gimpo-${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}.json`;
+  a.click();closeMenu();
+}
+function loadJSON(inp){const f=inp.files[0];if(!f) return;const r=new FileReader();r.onload=e=>{try{applyD(JSON.parse(e.target.result));}catch{alert('파일 오류');}};r.readAsText(f);closeMenu();}
+function resetAll(){if(!confirm('전체 초기화하시겠습니까?')) return;localStorage.removeItem('gimpo-v61');location.reload();}
+
+document.querySelectorAll('input,select').forEach(el=>{el.addEventListener('input',autoSave);el.addEventListener('change',autoSave);});
+
+// ══ 메인 캔버스 이벤트 ══
+function initMapCanvas(){
+  const mc=document.getElementById('mc');
+  mc.addEventListener('click',function(e){
+    if(e.target.classList.contains('mi2')||e.target.closest('.mi2')) return;
+    if(e.target.closest('#qe')) return;
+    var qe=document.getElementById('qe');
+    if(qe&&qe.style.display==='block') {closeQE();return;}
+    if(drawMode) handleDrawClick(e);
+  });
+  mc.addEventListener('mousemove',e=>{if(drawMode&&drawStart)showPL(e,mc);});
+  setupSB('mc');
+}
+
+// ══ 초기화 ══
+
+// 자동합산
+function sumCas(){var d=+(document.getElementById('f-death').value)||0,h=+(document.getElementById('f-heavy').value)||0,l=+(document.getElementById('f-light').value)||0;document.getElementById('f-cas-total').value=d+h+l||'';}
+function sumPeople(){var ids=['f-fire','f-city','f-police','f-other'],tot=ids.reduce(function(s,id){return s+(+(document.getElementById(id).value)||0);},0);document.getElementById('f-total').value=tot||'';}
+function sumVeh(){var ids=['v-cmd','v-pump','v-tank','v-chem','v-ladder','v-bend','v-rescue','v-smoke','v-amb','v-etc'],tot=ids.reduce(function(s,id){return s+(+(document.getElementById(id).value)||0);},0);document.getElementById('f-vehtot').value=tot||'';}
+
+// 대응단계
+var stageVal='';
+function setStage(btn,val){document.querySelectorAll('.stage-btn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');stageVal=val;autoSave();}
+
+// 차량 약식명칭
+function shortVName(n, station){
+  station = station || '';
+  // 김포소방서 특수부대는 차량명만
+  if(n.indexOf('현장지휘단')>=0) return n.replace('현장지휘단지휘차','지휘차').replace('현장지휘단안전지원차','안전지원차').replace('현장지휘단화재조사차','화재조사차').replace('현장지휘단','');
+  if(n.indexOf('구조대')>=0 && station==='김포') return n.replace('구조대구조공작차','구조공작차').replace('구조대장비운반차','장비운반차').replace('구조대특수구급차','구조구급').replace('구조대','');
+  if(n.indexOf('소방행정과')>=0) return '행정지휘차';
+  if(n.indexOf('재난대응과')>=0) return n.indexOf('순찰')>=0?'순찰차':'재난장비차';
+  if(n.indexOf('수난구조대')>=0) return n.replace('수난구조대펌프차','수난펌프').replace('수난구조대장비운반차','수난장비차').replace('수난구조대','수난');
+  // 일반: 센터명+차량약칭
+  var s = n
+    .replace('소방물탱크차','탱크').replace('특수구급차','구급')
+    .replace('고성능화학차','화학').replace('음압구급차','음압구급')
+    .replace('사다리차','사다리').replace('굴절차','굴절')
+    .replace('펌프차','펌프').replace('조연차','조연')
+    .replace('무인파괴방수차','무인파괴').replace('무인방수차','무인방수')
+    .replace('생활안전차','생활안전').replace('소방순찰차','순찰')
+    .replace('구조공작차','구조공작').replace('장비운반차','장비')
+    .replace('화학차','화학').replace('구급차','구급')
+    .replace('지휘차','지휘').replace('배연차','배연')
+    .replace('조명차','조명').replace('배기차','배기');
+  return s;
+}
+
+// PNG 캡처
+function captureAll(){if(typeof html2canvas==='undefined'){alert('PNG저장은 인터넷 연결 시 사용 가능합니다.\n오프라인에서는 인쇄(Ctrl+P)로 PDF저장하세요.');return;}html2canvas(document.getElementById('app'),{scale:2,useCORS:true,backgroundColor:null}).then(function(canvas){var a=document.createElement('a');a.href=canvas.toDataURL('image/png');var n=new Date();a.download='상황판_'+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0')+'.png';a.click();});}
+
+function initPhotoDrag(){
+  var ov=document.getElementById('photo-ov');
+  var bar=document.getElementById('photo-drag-bar');
+  if(!ov||!bar) return;
+  var dragging=false,ox=0,oy=0;
+  bar.addEventListener('mousedown',function(e){
+    dragging=true;
+    // 현재 위치 기준으로 오프셋 계산
+    var rect=ov.getBoundingClientRect();
+    ox=e.clientX-rect.left;
+    oy=e.clientY-rect.top;
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging) return;
+    var mc=document.getElementById('mc');
+    if(!mc) return;
+    var mcRect=mc.getBoundingClientRect();
+    var x=Math.max(0,Math.min(mcRect.width-ov.offsetWidth, e.clientX-mcRect.left-ox));
+    var y=Math.max(0,Math.min(mcRect.height-ov.offsetHeight, e.clientY-mcRect.top-oy));
+    ov.style.left=x+'px';
+    ov.style.top=y+'px';
+  });
+  document.addEventListener('mouseup',function(){dragging=false;});
+}
+
+
+// ══ 배율 자동 감지 ══
+function applyDeviceScale(){
+  var dpr = window.devicePixelRatio || 1;
+  var app = document.getElementById('app');
+  if(!app) return;
+
+  if(dpr <= 1.05){
+    // 100% — 기본값
+    app.style.transform = '';
+    app.style.transformOrigin = '';
+    app.style.width = '';
+    app.style.height = '';
+    app.style.position = '';
+    app.style.top = '';
+    app.style.left = '';
+    return;
+  }
+
+  // 125% 이상: transform:scale로 꽉 차게
+  var scale = 1 / dpr;
+
+  // scale 후 빈 공간을 채우기 위해
+  // width/height를 역으로 확대 (scale의 역수)
+  var invScale = dpr;
+
+  app.style.transformOrigin = '0 0';
+  app.style.transform = 'scale(' + scale + ')';
+  app.style.width = (invScale * 100) + '%';
+  app.style.height = (invScale * 100) + 'vh';
+  app.style.position = 'absolute';
+  app.style.top = '0';
+  app.style.left = '0';
+}
+window.addEventListener('resize',applyDeviceScale);
+
+function init(){
+  applyDeviceScale();initTL();initMapCanvas();
+  const saved=localStorage.getItem('gimpo-v61');
+  if(saved){try{applyD(JSON.parse(saved));}catch(e){console.warn(e);}}
+}
+init();
+</script>
+
+<!-- 빠른수정 패널 -->
+
+
+
+<div id="qe" style="width:230px;box-shadow:0 3px 16px rgba(0,0,0,.2);display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+              <div style="font-size:13px;font-weight:900;color:var(--tx);">빠른 수정</div>
+              <button style="background:var(--pbd);color:var(--tx);border:1.5px solid var(--pb);border-radius:5px;padding:2px 7px;font-size:12px;font-weight:900;cursor:pointer;" onclick="closeQE()">✕</button>
+            </div>
+            <label style="font-size:11px;font-weight:900;color:var(--mt);display:block;margin-bottom:2px;">표시명</label>
+            <input id="qe-lbl" spellcheck="false" oninput="applyQE()" style="width:100%;border:1.5px solid var(--pb);border-radius:4px;padding:4px 6px;font-size:13px;font-weight:700;color:var(--tx);background:var(--pbd);font-family:var(--fn);margin-bottom:5px;"/>
+            <label style="font-size:11px;font-weight:900;color:var(--mt);display:block;margin-bottom:2px;">크기</label>
+            <div style="display:flex;gap:4px;margin-bottom:5px;">
+              <button style="flex:1;background:var(--pbd);border:1.5px solid var(--pb);border-radius:5px;padding:4px;font-size:12px;font-weight:900;cursor:pointer;color:var(--tx);" onclick="resizeSel(.7)">소</button>
+              <button style="flex:1;background:var(--pbd);border:1.5px solid var(--pb);border-radius:5px;padding:4px;font-size:12px;font-weight:900;cursor:pointer;color:var(--tx);" onclick="resizeSel(1.0)">중</button>
+              <button style="flex:1;background:var(--pbd);border:1.5px solid var(--pb);border-radius:5px;padding:4px;font-size:12px;font-weight:900;cursor:pointer;color:var(--tx);" onclick="resizeSel(1.35)">대</button>
+            </div>
+            <label style="font-size:11px;font-weight:900;color:var(--mt);display:block;margin-bottom:2px;">상태</label>
+            <select id="qe-st" onchange="applyQE()" style="width:100%;border:1.5px solid var(--pb);border-radius:4px;padding:4px 6px;font-size:13px;font-weight:700;color:var(--tx);background:var(--pbd);font-family:var(--fn);margin-bottom:5px;">
+              <option>대기</option><option>활동</option><option>급수</option><option>회복</option><option>철수</option>
+            </select>
+            <label style="font-size:11px;font-weight:900;color:var(--mt);display:block;margin-bottom:2px;">비고</label>
+            <input id="qe-note" spellcheck="false" oninput="applyQE()" style="width:100%;border:1.5px solid var(--pb);border-radius:4px;padding:4px 6px;font-size:13px;font-weight:700;color:var(--tx);background:var(--pbd);font-family:var(--fn);margin-bottom:5px;"/>
+            <button style="width:100%;background:#dc2626;color:#fff;border:none;border-radius:5px;padding:6px;font-size:12px;font-weight:900;cursor:pointer;" onclick="delSel()">삭제</button>
+          </div>
+
+<!-- 화면공유 가이드 모달 -->
+<div id="share-modal" style="position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px;max-width:520px;width:90%;font-family:var(--fn);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div style="font-size:20px;font-weight:900;color:#1a3a6b;">📡 화면공유 방법</div>
+      <button onclick="document.getElementById('share-modal').style.display='none'" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:14px;font-weight:900;cursor:pointer;">✕ 닫기</button>
+    </div>
+
+    <!-- 방법 A -->
+    <div style="background:#f0f6ff;border:2px solid #1a3a6b;border-radius:8px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:16px;font-weight:900;color:#1a3a6b;margin-bottom:10px;">📌 방법 A — GitHub Pages (인터넷 가능 시)</div>
+      <div style="font-size:13px;font-weight:700;color:#0f172a;line-height:1.8;">
+        <b>1단계:</b> <a href="https://github.com" target="_blank" style="color:#1a3a6b;">github.com</a> 접속 → 무료 가입<br/>
+        <b>2단계:</b> 새 저장소(Repository) 생성 → 이름: <code style="background:#e8f0fe;padding:1px 5px;border-radius:3px;">dashboard</code><br/>
+        <b>3단계:</b> gimpo-v7.0.html 업로드 → 파일명을 <code style="background:#e8f0fe;padding:1px 5px;border-radius:3px;">index.html</code>로 변경<br/>
+        <b>4단계:</b> Settings → Pages → Branch: main → Save<br/>
+        <b>5단계:</b> URL 생성: <code style="background:#e8f0fe;padding:1px 5px;border-radius:3px;">https://[사용자명].github.io/dashboard/</code><br/>
+        <b>공유:</b> 이 URL을 패드/노트북 브라우저에서 열면 상황판 보기 가능
+      </div>
+      <div style="margin-top:8px;padding:8px;background:#fffbeb;border-radius:5px;font-size:12px;color:#92400e;font-weight:700;">
+        ⚠️ 실시간 동기화 아님 — 입력 내용은 노트북에서만 변경됨
+      </div>
+    </div>
+
+    <!-- 방법 C -->
+    <div style="background:#f0fdf4;border:2px solid #16a34a;border-radius:8px;padding:16px;">
+      <div style="font-size:16px;font-weight:900;color:#14532d;margin-bottom:10px;">📌 방법 C — HDMI 직접 연결 (현장 기본)</div>
+      <div style="font-size:13px;font-weight:700;color:#0f172a;line-height:1.8;">
+        <b>1단계:</b> HDMI 케이블로 노트북 → TV/모니터 연결<br/>
+        <b>2단계:</b> 키보드 <b>윈도우키 + P</b> 누르기<br/>
+        <b>3단계:</b> <b>복제</b> 선택 → 노트북과 TV 동일 화면<br/>
+        <b>4단계:</b> 상황판 실행 → F11로 전체화면
+      </div>
+      <div style="margin-top:8px;padding:8px;background:#dcfce7;border-radius:5px;font-size:12px;color:#14532d;font-weight:700;">
+        ✅ 완전 실시간 — 가장 안정적, 인터넷 불필요
+      </div>
+    </div>
+
+    <!-- 병행 운용 -->
+    <div style="margin-top:14px;padding:12px;background:#f8faff;border:1px solid #1a3a6b;border-radius:8px;font-size:13px;font-weight:700;color:#1a3a6b;">
+      💡 <b>권장 병행 운용:</b><br/>
+      현장 출동 시 → HDMI로 통제단 TV 연결 (실시간)<br/>
+      상황실/관계자 → GitHub URL로 원격 확인
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
